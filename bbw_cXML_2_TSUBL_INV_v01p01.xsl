@@ -7,7 +7,7 @@
         publisher= "Tradeshift"
         creator= "IngKye Ng, Tradeshift"
         created= 2019-01-29
-        modified= 2019-01-30
+        modified= 2019-02-11
         issued= 2019-01-30
         
 ******************************************************************************************************************
@@ -21,10 +21,13 @@
                 xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
                 xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
                 xmlns:functx="http://www.functx.com"
+                xmlns:metadata-util="java:com.babelway.messaging.transformation.xslt.function.MetadataUtil"
                 xmlns:bbw="java:com.babelway.messaging.transformation.xslt.function.BabelwayFunctions"
-                exclude-result-prefixes="xs bbw functx">
+                xmlns:bbwx="http://xmlns.babelway.com/com.babelway.messaging.transformation.xslt.function.BBWXContextFactory"
+                exclude-result-prefixes="xs metadata-util bbw bbwx functx">
     <xsl:output encoding="UTF-8" indent="yes" method="xml" omit-xml-declaration="no"/>
     <xsl:strip-space elements="*"/>
+    <xsl:param name="MSG"/>
 
     <xsl:variable name="g1"
                   select="format-number(sum(/cXML/Request/InvoiceDetailRequest/InvoiceDetailOrder/InvoiceDetailItem/SubtotalAmount/Money), '0.00##')"/>
@@ -126,8 +129,15 @@
         <xsl:variable name="BankAcctNum" select="functx:note-extraction(Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments,'AccountNumber:')"/>
         
         <xsl:variable name="PaymentID" select="functx:note-extraction(Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments,'PaymentID:')"/>
-
-        <xsl:variable name="InvoiceTypeCode" select="'380'"/>
+        
+        <xsl:variable name="BankName" select="functx:note-extraction(Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments,'BankName:')"/>
+        
+        <xsl:variable name="InvoiceTypeCode">
+            <xsl:choose>
+                <xsl:when test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/@purpose='standard'">380</xsl:when>
+                <xsl:when test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/@purpose='creditMemo'">381</xsl:when>
+            </xsl:choose>
+        </xsl:variable>
 
         <xsl:variable name="CurrencyCode"
                       select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/Money/@currency"/>
@@ -137,6 +147,12 @@
 
         <xsl:variable name="RefID"
                       select="Request/InvoiceDetailRequest/InvoiceDetailOrder/InvoiceDetailOrderInfo/OrderReference/@orderID"/>
+        
+        <xsl:variable name="InvRefID"
+            select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoiceIDInfo/@invoiceID"/>
+        
+        <xsl:variable name="InvRefDate"
+            select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoiceIDInfo/@invoiceDate"/>
 
         <xsl:variable name="SelRefID"
                       select="Request/InvoiceDetailRequest/InvoiceDetailOrder/InvoiceDetailOrderInfo/SupplierOrderInfo/@orderID"/>
@@ -639,12 +655,18 @@
         <xsl:variable name="fTaxDate" select="substring($TaxDate, 1, 10)"/>
 
         <xsl:variable name="fRefDate" select="substring($RefDate, 1, 10)"/>
+        
+        <xsl:variable name="fInvRefDate" select="substring($InvRefDate, 1, 10)"/>
 
         <xsl:variable name="fDelDate" select="substring($DelDate, 1, 10)"/>
 
         <xsl:variable name="fPayDate" select="substring($PayDate, 1, 10)"/>
 
         <xsl:variable name="fTaxExchangeRateDate" select="substring($TaxExchangeRateDate, 1, 10)"/>
+        
+        <xsl:if test="$MSG">
+            <xsl:value-of select="metadata-util:put($MSG, 'com_babelway_messaging_context_message_reference', string(concat('INV', $DocID, '_', $SeCountry)))"/>
+        </xsl:if>
 
 
         <!-- Start of Invoice -->
@@ -714,6 +736,21 @@
                     </xsl:if>
                 </cac:OrderReference>
             </xsl:if>
+            
+            <xsl:if test="string($InvRefID)">
+                <cac:BillingReference>
+                    <cac:InvoiceDocumentReference>
+                        <cbc:ID>
+                            <xsl:value-of select="$InvRefID"/>
+                        </cbc:ID>
+                        <xsl:if test="string($fInvRefDate)">
+                            <cbc:IssueDate>
+                                <xsl:value-of select="$fInvRefDate"/>
+                            </cbc:IssueDate>
+                        </xsl:if>
+                    </cac:InvoiceDocumentReference>
+                </cac:BillingReference>
+            </xsl:if>
 
             <xsl:if test="string($InvoiceContractReferenceID)">
               <cac:ContractDocumentReference>
@@ -749,7 +786,19 @@
                     <cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">VN ID</cbc:DocumentTypeCode>
                 </cac:AdditionalDocumentReference>
             </xsl:if>
-
+            
+            <xsl:if test="bbw:metadata('inFile') != ''">
+                <cac:AdditionalDocumentReference>
+                    <cbc:ID>1</cbc:ID>
+                    <cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">sourcedocument</cbc:DocumentTypeCode>
+                    <cac:Attachment>
+                        <cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="application/xml">
+                            <xsl:value-of select="bbw:metadataBase64('inFile')" disable-output-escaping="no"/>
+                        </cbc:EmbeddedDocumentBinaryObject>
+                    </cac:Attachment>
+                </cac:AdditionalDocumentReference>
+            </xsl:if>
+           
             <cac:AccountingSupplierParty>
                 <cac:Party>
                     <xsl:if test="string($SeEndpointID)">
@@ -1205,6 +1254,14 @@
                                     <cbc:ID>
                                         <xsl:value-of select="$SortCode"/>
                                     </cbc:ID>
+                                    <cbc:Name>
+                                        <xsl:value-of select="$BankName"/>
+                                    </cbc:Name>
+                                    <cac:FinancialInstitution>
+                                        <cbc:Name>
+                                            <xsl:value-of select="$BankName"/>
+                                        </cbc:Name>
+                                    </cac:FinancialInstitution>
                                 </cac:FinancialInstitutionBranch>
                             </cac:PayeeFinancialAccount>
                         </xsl:when>
