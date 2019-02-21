@@ -343,8 +343,8 @@
         <xsl:variable name="ChargeAmount2"
                       select="Request/InvoiceDetailRequest/InvoiceDetailSummary/ShippingAmount/Money"/>
 
-        <xsl:variable name="ChargeReason2" select="'Shipping'"/>
-
+        <xsl:variable name="ChargeReason2"
+            select="Request/InvoiceDetailRequest/InvoiceDetailSummary/ShippingAmount/Description/ShortName"/>
 
         <xsl:variable name="TaxExchangeRateTargetCurrencyCode"
                       select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/Money/@alternateCurrency"/>
@@ -581,6 +581,17 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
+        
+        <xsl:variable name="fChargeReason2">
+            <xsl:choose>
+                <xsl:when test="string($ChargeReason2)">
+                    <xsl:value-of select="$ChargeReason2"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="'Shipping'"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
 
         <xsl:variable name="h10" select="format-number(number(translate($ChargeAmount2,',', '')),'##.00')"/>
         <xsl:variable name="fChargeAmount2">
@@ -667,7 +678,6 @@
         <xsl:if test="$MSG">
             <xsl:value-of select="metadata-util:put($MSG, 'com_babelway_messaging_context_message_reference', string(concat('INV', $DocID, '_', $SeCountry)))"/>
         </xsl:if>
-
 
         <!-- Start of Invoice -->
         <Invoice>
@@ -1637,7 +1647,7 @@
                     </xsl:choose>
                     <cbc:ChargeIndicator>true</cbc:ChargeIndicator>
                     <cbc:AllowanceChargeReason>
-                        <xsl:value-of select="$ChargeReason2"/>
+                        <xsl:value-of select="$fChargeReason2"/>
                     </cbc:AllowanceChargeReason>
                     <cbc:MultiplierFactorNumeric>1</cbc:MultiplierFactorNumeric>
                     <cbc:SequenceNumeric>1</cbc:SequenceNumeric>
