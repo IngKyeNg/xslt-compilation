@@ -7,7 +7,7 @@
         publisher= "Tradeshift"
         creator= "IngKye Ng, Tradeshift"
         created= 2019-01-29
-        modified= 2019-02-11
+        modified= 2019-02-26
         issued= 2019-01-30
         
 ******************************************************************************************************************
@@ -119,8 +119,6 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-
-        <xsl:variable name="Note" select="functx:note-extraction(Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments,'Freetext:')"/>
         
         <xsl:variable name="PaymentCode" select="functx:note-extraction(Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments,'PaymentCode:')"/>
         
@@ -132,10 +130,20 @@
         
         <xsl:variable name="BankName" select="functx:note-extraction(Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments,'BankName:')"/>
         
+        <xsl:variable name="Note">
+            <xsl:choose>
+                <xsl:when test="string($PaymentCode) or string($SortCode) or string($BankAcctNum) or string($PaymentID) or string($BankName)">
+                    <xsl:value-of select="functx:note-extraction(Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments,'Freetext:')"/>
+                </xsl:when>
+                <xsl:otherwise>Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments</xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
         <xsl:variable name="InvoiceTypeCode">
             <xsl:choose>
                 <xsl:when test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/@purpose='standard'">380</xsl:when>
                 <xsl:when test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/@purpose='creditMemo'">381</xsl:when>
+                <xsl:otherwise>380</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
 
@@ -804,6 +812,18 @@
                     <cac:Attachment>
                         <cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="application/xml">
                             <xsl:value-of select="bbw:metadataBase64('inFile')" disable-output-escaping="no"/>
+                        </cbc:EmbeddedDocumentBinaryObject>
+                    </cac:Attachment>
+                </cac:AdditionalDocumentReference>
+            </xsl:if>
+            
+            <xsl:if test="bbw:metadata('attachment') != ''">
+                <cac:AdditionalDocumentReference>
+                    <cbc:ID>1</cbc:ID>
+                    <cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">attachment</cbc:DocumentTypeCode>
+                    <cac:Attachment>
+                        <cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="bbw:metadata('mimeCode')">
+                            <xsl:value-of select="bbw:metadataBase64('attachment')" disable-output-escaping="no"/>
                         </cbc:EmbeddedDocumentBinaryObject>
                     </cac:Attachment>
                 </cac:AdditionalDocumentReference>
