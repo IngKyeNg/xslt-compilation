@@ -23,53 +23,50 @@ Description: This XSLT is to transform invoice to credit note if credit note fla
     <!-- modified credit note transform -->
     <xsl:template match="/*">
         <xsl:choose>
-            <xsl:when test="cbc:InvoiceTypeCode/text()='380'">
+            <xsl:when test="cbc:InvoiceTypeCode/text()='380' or  cbc:InvoiceTypeCode/text()='325' or cbc:InvoiceTypeCode/text()='386'">
                 <xsl:element name="Invoice" namespace="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
                     <xsl:namespace name="cac">urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2</xsl:namespace>
                     <xsl:namespace name="cbc">urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2</xsl:namespace>
                     <xsl:apply-templates select="@* | node()" />
                 </xsl:element>
             </xsl:when>
-            <xsl:when test="cbc:InvoiceTypeCode/text()='381'">
+            <xsl:otherwise>
                 <xsl:element name="CreditNote" namespace="urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2">
                     <xsl:namespace name="cac">urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2</xsl:namespace>
                     <xsl:namespace name="cbc">urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2</xsl:namespace>
                     <xsl:apply-templates select="@* | node()" />
                 </xsl:element>
-            </xsl:when>
-            <xsl:otherwise></xsl:otherwise>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
     <xsl:template match="cac:InvoiceLine">
         <xsl:choose>
-            <xsl:when test="../cbc:InvoiceTypeCode/text()='380'">
+            <xsl:when test="../cbc:InvoiceTypeCode/text()='380' or  ../cbc:InvoiceTypeCode/text()='325' or ../cbc:InvoiceTypeCode/text()='386'">
                 <xsl:element name="cac:InvoiceLine">
                     <xsl:apply-templates select="@* | node()" />
                 </xsl:element>
             </xsl:when>
-            <xsl:when test="../cbc:InvoiceTypeCode/text()='381'">
+            <xsl:otherwise>
                 <xsl:element name="cac:CreditNoteLine">
                     <xsl:apply-templates select="@* | node()" />
                 </xsl:element>
-            </xsl:when>
-            <xsl:otherwise></xsl:otherwise>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
     <xsl:template match="cac:InvoiceLine/cbc:InvoicedQuantity">
         <xsl:choose>
-            <xsl:when test="../../cbc:InvoiceTypeCode/text()='380'">
+            <xsl:when test="../../cbc:InvoiceTypeCode/text()='380' or  ../../cbc:InvoiceTypeCode/text()='325' or ../../cbc:InvoiceTypeCode/text()='386'">
                 <xsl:element name="cbc:InvoicedQuantity">
                     <xsl:apply-templates select="@* | node()" />
                 </xsl:element>
             </xsl:when>
-            <xsl:when test="../../cbc:InvoiceTypeCode/text()='381'">
+            <xsl:otherwise>
                 <xsl:element name="cbc:CreditedQuantity">
                     <xsl:apply-templates select="@* | node()" />
                 </xsl:element>
-            </xsl:when>
-            <xsl:otherwise></xsl:otherwise>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 </xsl:stylesheet>

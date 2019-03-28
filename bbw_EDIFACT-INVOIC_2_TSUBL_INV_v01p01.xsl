@@ -1243,20 +1243,44 @@
 					<cbc:ID>1</cbc:ID>
 					<cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">sourcedocument</cbc:DocumentTypeCode>
 					<cac:Attachment>
-						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="application/xml">
+						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="text/plain">
 							<xsl:value-of select="bbw:metadataBase64('inFile')" disable-output-escaping="no"/>
 						</cbc:EmbeddedDocumentBinaryObject>
 					</cac:Attachment>
 				</cac:AdditionalDocumentReference>
 			</xsl:if>
 			
-			<xsl:if test="bbw:metadata('attachment') != ''">
+			<xsl:if test="bbw:metadata('attachment1') != ''">
 				<cac:AdditionalDocumentReference>
 					<cbc:ID>1</cbc:ID>
 					<cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">attachment</cbc:DocumentTypeCode>
 					<cac:Attachment>
-						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="bbw:metadata('mimeCode')">
-							<xsl:value-of select="bbw:metadataBase64('attachment')" disable-output-escaping="no"/>
+						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="attachment1" mimeCode="bbw:metadata('mimeCode1')">
+							<xsl:value-of select="bbw:metadataBase64('attachment1')" disable-output-escaping="no"/>
+						</cbc:EmbeddedDocumentBinaryObject>
+					</cac:Attachment>
+				</cac:AdditionalDocumentReference>
+			</xsl:if>
+			
+			<xsl:if test="bbw:metadata('attachment2') != ''">
+				<cac:AdditionalDocumentReference>
+					<cbc:ID>1</cbc:ID>
+					<cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">attachment</cbc:DocumentTypeCode>
+					<cac:Attachment>
+						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="attachment2" mimeCode="bbw:metadata('mimeCode2')">
+							<xsl:value-of select="bbw:metadataBase64('attachment2')" disable-output-escaping="no"/>
+						</cbc:EmbeddedDocumentBinaryObject>
+					</cac:Attachment>
+				</cac:AdditionalDocumentReference>
+			</xsl:if>
+			
+			<xsl:if test="bbw:metadata('attachment3') != ''">
+				<cac:AdditionalDocumentReference>
+					<cbc:ID>1</cbc:ID>
+					<cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">attachment</cbc:DocumentTypeCode>
+					<cac:Attachment>
+						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="attachment3" mimeCode="bbw:metadata('mimeCode3')">
+							<xsl:value-of select="bbw:metadataBase64('attachment3')" disable-output-escaping="no"/>
 						</cbc:EmbeddedDocumentBinaryObject>
 					</cac:Attachment>
 				</cac:AdditionalDocumentReference>

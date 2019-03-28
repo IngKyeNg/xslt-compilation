@@ -7,7 +7,7 @@
         publisher= "Tradeshift"
         creator= "IngKye Ng, Tradeshift"
         created= 2019-01-29
-        modified= 2019-02-26
+        modified= 2019-03-27
         issued= 2019-01-30
         
 ******************************************************************************************************************
@@ -135,15 +135,23 @@
                 <xsl:when test="string($PaymentCode) or string($SortCode) or string($BankAcctNum) or string($PaymentID) or string($BankName)">
                     <xsl:value-of select="functx:note-extraction(Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments,'Freetext:')"/>
                 </xsl:when>
-                <xsl:otherwise>Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments</xsl:otherwise>
+                <xsl:otherwise>
+                    <xsl:value-of select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/Comments"/>
+                </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
         
         <xsl:variable name="InvoiceTypeCode">
             <xsl:choose>
-                <xsl:when test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/@purpose='standard'">380</xsl:when>
-                <xsl:when test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/@purpose='creditMemo'">381</xsl:when>
-                <xsl:otherwise>380</xsl:otherwise>
+                <xsl:when test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/@purpose='standard'">
+                    <xsl:value-of select="380"/>
+                </xsl:when>
+                <xsl:when test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/@purpose='creditMemo'">
+                    <xsl:value-of select="381"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="380"/>
+                </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
 
@@ -689,7 +697,6 @@
 
         <!-- Start of Invoice -->
         <Invoice>
-            <xsl:attribute name="xsi:schemaLocation">urn:oasis:names:specification:ubl:schema:xsd:Invoice-2 UBL-Invoice-2.0.xsd</xsl:attribute>
 
             <cbc:UBLVersionID>
                 <xsl:value-of select="$UBLVersionID"/>
@@ -711,9 +718,11 @@
                 <xsl:value-of select="$fDocDate"/>
             </cbc:IssueDate>
 
-            <cbc:InvoiceTypeCode listAgencyID="6" listID="UN/ECE 1001 Subset">
-                <xsl:value-of select="$InvoiceTypeCode"/>
-            </cbc:InvoiceTypeCode>
+            <xsl:if test="$InvoiceTypeCode != '381'">
+                <cbc:InvoiceTypeCode listAgencyID="6" listID="UN/ECE 1001 Subset">
+                    <xsl:value-of select="$InvoiceTypeCode"/>
+                </cbc:InvoiceTypeCode>
+            </xsl:if>
 
             <xsl:if test="string($Note)">
                 <cbc:Note>
@@ -1240,7 +1249,7 @@
                 </cac:Delivery>
             </xsl:if>
 
-            <xsl:if test="$fPaymentFlag = 'true'">
+            <xsl:if test="$fPaymentFlag = 'true' and $InvoiceTypeCode != '381'">
                 <cac:PaymentMeans>
                     <cbc:ID>1</cbc:ID>
                     <xsl:choose>
@@ -1427,7 +1436,7 @@
                 </xsl:for-each>
             </xsl:if>
 
-            <xsl:if test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoiceDetailPaymentTerm">
+            <xsl:if test="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoiceDetailPaymentTerm and $InvoiceTypeCode != '381'">
                 <xsl:for-each select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoiceDetailPaymentTerm">
 
                     <xsl:variable name="DaysOfDiscount_old">
@@ -2311,7 +2320,7 @@
                         </cbc:AccountingCost>
                     </xsl:if>
 
-                    <xsl:if test="string($LineRefID) or string($LineOrderID) or string($LineSelOrderID)">
+                    <xsl:if test="(string($LineRefID) or string($LineOrderID) or string($LineSelOrderID) and $InvoiceTypeCode != '381')">
                         <xsl:variable name="fLineRefID">
                             <xsl:choose>
                                 <xsl:when test="string($LineRefID)">
@@ -2342,7 +2351,22 @@
                             </xsl:if>
                         </cac:OrderLineReference>
                     </xsl:if>
-
+                    
+                    <xsl:if test="((string($LineRefID) or string($LineOrderID)) and $InvoiceTypeCode = '381')">
+                        <cac:DocumentReference>
+                            <cbc:ID>
+                                <xsl:value-of select="$LineRefID"/>
+                            </cbc:ID>
+                            <cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">Order ID</cbc:DocumentTypeCode>
+                        </cac:DocumentReference>
+                        
+                        <cac:DocumentReference>
+                            <cbc:ID>
+                                <xsl:value-of select="$LineOrderID"/>
+                            </cbc:ID>
+                            <cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">Order Line ID</cbc:DocumentTypeCode>
+                        </cac:DocumentReference>
+                    </xsl:if>
                     <xsl:if test="string($LineFileReferenceID)">
                         <cac:DocumentReference>
                             <cbc:ID>
