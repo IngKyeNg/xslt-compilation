@@ -2,16 +2,16 @@
 
 <!--
 ******************************************************************************************************************
-        TSUBL Stylesheet	
-        title= bbw_X12-210_2_TSUBL_INV_v01p01
-        publisher= "Tradeshift"
-        creator= "IngKye Ng, Tradeshift"
-        created= 2019-03-06
-        modified= 2019-03-12
-        issued= 2019-03-06
-        
+		TSUBL Stylesheet
+		title= bbw_X12-810-4010_2_TSUBL_INV_v01p01
+		publisher= "Tradeshift"
+		creator= "IngKye Ng, Tradeshift"
+		created= 2019-04-09
+		modified= 2019-04-10
+		issued= 2019-04-09
 ******************************************************************************************************************
 -->
+
 
 <xsl:stylesheet version="2.0"
 	xmlns:xsl  = "http://www.w3.org/1999/XSL/Transform"
@@ -20,9 +20,6 @@
 	xmlns      = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
 	xmlns:cac  = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
 	xmlns:cbc  = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
-	xmlns:ccts = "urn:oasis:names:specification:ubl:schema:xsd:CoreComponentParameters-2"
-	xmlns:sdt  = "urn:oasis:names:specification:ubl:schema:xsd:SpecializedDatatypes-2"
-	xmlns:udt  = "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2"
 	xmlns:metadata-util="java:com.babelway.messaging.transformation.xslt.function.MetadataUtil"
 	xmlns:bbw="java:com.babelway.messaging.transformation.xslt.function.BabelwayFunctions"
 	xmlns:bbwx="http://xmlns.babelway.com/com.babelway.messaging.transformation.xslt.function.BBWXContextFactory"
@@ -31,28 +28,14 @@
 	<xsl:output method="xml" encoding="UTF-8" indent="yes"/>
 	<xsl:strip-space elements="*" />
 	<xsl:param name="MSG"/>
-	
-	<xsl:variable name="ShippingFlag">
-		<xsl:choose>
-			<xsl:when test="exists(/X12/MESSAGES/M210/G62[G6201='69']) or 
-				exists(X12/MESSAGES/M210/G62[G6201='70']) or
-				exists(/X12/MESSAGES/M210/SG10160) or
-				exists(/X12/MESSAGES/M210/N9[N901='2I'])">
-				<xsl:value-of select="'true'"/>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:value-of select="'false'"/>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
 
-     <xsl:template match="/">
+    <xsl:template match="/">
 		<xsl:apply-templates/>
-     </xsl:template>
+    </xsl:template>
 
 	<xsl:template match="*">
 		<Error>
-			<Errortext>Fatal error: Unsupported documenttype! This stylesheet only supports conversion of a X12 210.</Errortext>
+			<Errortext>Fatal error: Unsupported documenttype! This stylesheet only supports conversion of a X12 810.</Errortext>
 			<Input><xsl:value-of select="."/></Input>
 		</Error>
 	</xsl:template>
@@ -62,11 +45,10 @@
 		<!-- Parameters (please assign before using this stylesheet) -->
 
 		<!-- End parameters -->
-
+		
+		<xsl:variable name="M810" select="MESSAGES/M810"/>
 
 		<!-- Global Headerfields -->
-		
-		<xsl:variable name="M210" select="MESSAGES/M210"/>
 
 		<xsl:variable name="UBLVersionID" select="'2.0'"/>
 
@@ -78,39 +60,38 @@
 
 		<xsl:variable name="ProfileID_schemeAgencyID" select="'CEN/ISSS WS/BII'"/>
 
-		<xsl:variable name="DocID" select="$M210/B3/B302"/>
+		<xsl:variable name="DocID" select="$M810/BIG/BIG02"/>
 
-		<xsl:variable name="DocDate" select="$M210/B3/B306"/>
+		<xsl:variable name="DocDate" select="$M810/BIG/BIG01"/>
 
 		<xsl:variable name="TaxDate" select="''"/>
 
-		<xsl:variable name="Note">
-			<xsl:apply-templates select="MESSAGES/M210/K1"/>
-		</xsl:variable>
+		<xsl:variable name="Note" select="''"/>
 
-		<xsl:variable name="InvoiceTypeCode" select="$M210/B3/B304"/>
+		<xsl:variable name="InvoiceTypeCode" select="$M810/BIG/BIG07"/>
 
-		<xsl:variable name="CurrencyCode" select="$M210/C3/C301"/>
+		<xsl:variable name="CurrencyCode" select="$M810/CUR/CUR02"/>
 
-		<xsl:variable name="AccCost" select="$M210/N9[N901='79']/N902"/>
+		<xsl:variable name="AccCost" select="$M810/REF[REF01 = '79']/REF02"/>
 
-		<xsl:variable name="RefID" select="$M210/N9[N901='PO']/N902"/>
+		<xsl:variable name="RefID" select="$M810/REF[REF01 = 'PO']/REF02"/>
 
 		<xsl:variable name="RefDate" select="''"/>
 
-		<xsl:variable name="InvoiceContractReferenceID" select="$M210/N9[N901='CT']/N902"/>
+		<xsl:variable name="InvoiceContractReferenceID" select="$M810/REF[REF01 = 'CT']/REF02"/>
 
-		<xsl:variable name="InvoiceBOLReferenceID" select="$M210/B3/B303"/>
+		<xsl:variable name="InvoiceBOLReferenceID" select="$M810/REF[REF01 = 'BM']/REF02"/>
 
-		<xsl:variable name="InvoiceFileReferenceID" select="$M210/N9[N901='CR']/N902"/>
+		<xsl:variable name="InvoiceFileReferenceID" select="$M810/REF[REF01 = 'CR']/REF02"/>
+		
+		<xsl:variable name="InvoiceVehicleNumber" select="$M810/REF[REF01 = 'VT']/REF02"/>
 
-		<xsl:variable name="InvoiceVehicleNumber" select="$M210/N9[N901='VT']/N902"/>
 
-
-		<xsl:variable name="SeQua">
+		<xsl:variable name="Se_id">
 			<xsl:choose>
-				<xsl:when test="string($M210/SG10110/N1[N101='SU']/N102)"><xsl:value-of select="'SU'"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="'SH'"/></xsl:otherwise>
+				<xsl:when test="$M810/SG10070/N1/N101 = 'SU'"><xsl:value-of select="'SU'"/></xsl:when>
+				<xsl:when test="$M810/SG10070/N1/N101 = 'RI'"><xsl:value-of select="'RI'"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 
@@ -118,31 +99,31 @@
 
 		<xsl:variable name="SeEndpointIDscheme" select="ISA/ISA05"/>
 
-		<xsl:variable name="SePartySenderAssigned" select="$M210/SG10110[N1/N101=$SeQua]/N9[N901='VR']/N902"/>
+		<xsl:variable name="SePartySenderAssigned" select="$M810/SG10070[N1/N101 = $Se_id]/REF[REF01 = 'VR']/REF02"/>
 
 		<xsl:variable name="SePartyGLN" select="''"/>
 
-		<xsl:variable name="SePartyLEGAL" select="$M210/SG10110/N1[N101=$SeQua and N103 = 'FI']/N104"/>
+		<xsl:variable name="SePartyLEGAL" select="$M810/SG10070/N1[N101 = $Se_id and N103 = 'FI']/N104"/>
 
 		<xsl:variable name="SePartyLEGALscheme" select="''"/>
 
-		<xsl:variable name="SePartyTAX" select="$M210/SG10110/N1[N101=$SeQua and N103 = 'TA']/N104"/>
+		<xsl:variable name="SePartyTAX" select="$M810/SG10070/N1[N101 = $Se_id and N103 = 'TA']/N104"/>
 
 		<xsl:variable name="SePartyTAXscheme" select="''"/>
 
-		<xsl:variable name="SeName" select="$M210/SG10110/N1[N101=$SeQua]/N102"/>
+		<xsl:variable name="SeName" select="$M810/SG10070/N1[N101 = $Se_id]/N102"/>
 
-		<xsl:variable name="SeStreet1" select="$M210/SG10110[N1/N101=$SeQua]/N3/N301"/>
+		<xsl:variable name="SeStreet1" select="$M810/SG10070[N1/N101 = $Se_id]/N3/N301"/>
 
-		<xsl:variable name="SeStreet2" select="$M210/SG10110[N1/N101=$SeQua]/N3/N302"/>
+		<xsl:variable name="SeStreet2" select="$M810/SG10070[N1/N101 = $Se_id]/N3/N302"/>
 
-		<xsl:variable name="SeCity" select="$M210/SG10110[N1/N101=$SeQua]/N4/N401"/>
+		<xsl:variable name="SeCity" select="$M810/SG10070[N1/N101 = $Se_id]/N4/N401"/>
 
-		<xsl:variable name="SeZip" select="$M210/SG10110[N1/N101=$SeQua]/N4/N403"/>
+		<xsl:variable name="SeZip" select="$M810/SG10070[N1/N101 = $Se_id]/N4/N403"/>
 
-		<xsl:variable name="SeState" select="$M210/SG10110[N1/N101=$SeQua]/N4/N402"/>
+		<xsl:variable name="SeState" select="$M810/SG10070[N1/N101 = $Se_id]/N4/N402"/>
 
-		<xsl:variable name="SeCountry" select="$M210/SG10110[N1/N101=$SeQua]/N4/N404"/>
+		<xsl:variable name="SeCountry" select="$M810/SG10070[N1/N101 = $Se_id]/N4/N404"/>
 
 		<xsl:variable name="SeRef" select="''"/>
 
@@ -153,81 +134,91 @@
 		<xsl:variable name="SeRefMail" select="''"/>
 
 
-		<xsl:variable name="IpQua">
+		<xsl:variable name="Ip_id">
 			<xsl:choose>
-				<xsl:when test="string($M210/SG10110/N1[N101='BY']/N102)"><xsl:value-of select="'BY'"/></xsl:when>
-				<xsl:when test="string($M210/SG10110/N1[N101='CN']/N102)"><xsl:value-of select="'CN'"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="'PR'"/></xsl:otherwise>
+				<xsl:when test="$M810/SG10070/N1/N101 = 'BY'"><xsl:value-of select="'BY'"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 
-		<xsl:variable name="IpCustomerAssignedAccountID" select="$M210/N9[N901='11']/N902"/>
+		<xsl:variable name="IpCustomerAssignedAccountID" select="$M810/REF[REF01 = '11']/REF02"/>
 
 		<xsl:variable name="IpEndpointID" select="bbw:trim(ISA/ISA08)"/>
 
 		<xsl:variable name="IpEndpointIDscheme" select="ISA/ISA07"/>
 
-		<xsl:variable name="IpPartyTSGLI" select="$M210/SG10110[N1/N101=$IpQua]/N9[N901='8N']/N902"/>
+		<xsl:variable name="IpPartyTSGLI" select="$M810/SG10070[N1/N101 = $Ip_id]/REF[REF01 = '8N']/REF02"/>
 
-		<xsl:variable name="IpPartySenderAssigned" select="$M210/SG10110[N1/N101=$IpQua]/N9[N901='VR']/N902"/>
+		<xsl:variable name="IpPartySenderAssigned" select="$M810/SG10070[N1/N101 = $Ip_id]/REF[REF01 = 'VR']/REF02"/>
+
+		<xsl:variable name="IpPartyTSLEID" select="$M810/SG10070[N1/N101 = $Ip_id]/REF[REF01 = '23']/REF02"/>
 
 		<xsl:variable name="IpPartyGLN" select="''"/>
 
-		<xsl:variable name="IpPartyLEGAL" select="$M210/SG10110/N1[N101=$IpQua and N103 = 'FI']/N104"/>
+		<xsl:variable name="IpPartyLEGAL" select="$M810/SG10070/N1[N101 = $Ip_id and N103 = 'FI']/N104"/>
 
 		<xsl:variable name="IpPartyLEGALscheme" select="''"/>
 
-		<xsl:variable name="IpPartyTAX" select="$M210/SG10110/N1[N101=$IpQua and N103 = 'TA']/N104"/>
+		<xsl:variable name="IpPartyTAX" select="$M810/SG10070/N1[N101 = $Ip_id and N103 = 'TA']/N104"/>
 
 		<xsl:variable name="IpPartyTAXscheme" select="''"/>
 
-		<xsl:variable name="IpName" select="$M210/SG10110/N1[N101=$IpQua]/N102"/>
+		<xsl:variable name="IpName" select="$M810/SG10070/N1[N101 = $Ip_id]/N102"/>
 
-		<xsl:variable name="IpStreet1" select="$M210/SG10110[N1/N101=$IpQua]/N3/N301"/>
+		<xsl:variable name="IpStreet1" select="$M810/SG10070[N1/N101 = $Ip_id]/N3/N301"/>
 
-		<xsl:variable name="IpStreet2" select="$M210/SG10110[N1/N101=$IpQua]/N3/N302"/>
+		<xsl:variable name="IpStreet2" select="$M810/SG10070[N1/N101 = $Ip_id]/N3/N302"/>
 
-		<xsl:variable name="IpCity" select="$M210/SG10110[N1/N101=$IpQua]/N4/N401"/>
+		<xsl:variable name="IpCity" select="$M810/SG10070[N1/N101 = $Ip_id]/N4/N401"/>
 
-		<xsl:variable name="IpZip" select="$M210/SG10110[N1/N101=$IpQua]/N4/N403"/>
+		<xsl:variable name="IpZip" select="$M810/SG10070[N1/N101 = $Ip_id]/N4/N403"/>
 
-		<xsl:variable name="IpState" select="$M210/SG10110[N1/N101=$IpQua]/N4/N402"/>
+		<xsl:variable name="IpState" select="$M810/SG10070[N1/N101 = $Ip_id]/N4/N402"/>
 
-		<xsl:variable name="IpCountry" select="$M210/SG10110[N1/N101=$IpQua]/N4/N404"/>
+		<xsl:variable name="IpCountry" select="$M810/SG10070[N1/N101 = $Ip_id]/N4/N404"/>
 
-		<xsl:variable name="IpRef" select="$M210/SG10110[N1/N101=$IpQua]/N9[N901='IT']/N902"/>
+		<xsl:variable name="IpRef" select="$M810/REF[REF01 = 'IT']/REF02"/>
 
-		<xsl:variable name="IpRefName" select="''"/>								
+		<xsl:variable name="IpRefName" select="''"/>
 
 		<xsl:variable name="IpRefTlf" select="''"/>
 
 		<xsl:variable name="IpRefMail" select="''"/>
 
 
-		<xsl:variable name="DelDate" select="$M210/B3/B309"/>
+		<xsl:variable name="Del_id">
+			<xsl:choose>
+				<xsl:when test="$M810/SG10070/N1/N101 = 'ST'"><xsl:value-of select="'ST'"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="DelDate" select="$M810/DTM[DTM01='011']/DTM02"/>
 
 		<xsl:variable name="DelIDtype" select="'GLN'"/>
 
 		<xsl:variable name="DelID" select="''"/>
 
-		<xsl:variable name="DelName" select="''"/>
+		<xsl:variable name="DelName" select="$M810/SG10070/N1[N101 = $Del_id]/N102"/>
 
-		<xsl:variable name="DelStreet1" select="''"/>
+		<xsl:variable name="DelDescription" select="$M810/SG10070[N1/N101 = $Del_id]/N2/N201"/>
 
-		<xsl:variable name="DelStreet2" select="''"/>
+		<xsl:variable name="DelStreet1" select="$M810/SG10070[N1/N101 = $Del_id]/N3/N301"/>
 
-		<xsl:variable name="DelCity" select="''"/>
+		<xsl:variable name="DelStreet2" select="$M810/SG10070[N1/N101 = $Del_id]/N3/N302"/>
 
-		<xsl:variable name="DelZip" select="''"/>
+		<xsl:variable name="DelCity" select="$M810/SG10070[N1/N101 = $Del_id]/N4/N401"/>
 
-		<xsl:variable name="DelState" select="''"/>
+		<xsl:variable name="DelZip" select="$M810/SG10070[N1/N101 = $Del_id]/N4/N403"/>
 
-		<xsl:variable name="DelCountry" select="''"/>
+		<xsl:variable name="DelState" select="$M810/SG10070[N1/N101 = $Del_id]/N4/N402"/>
+
+		<xsl:variable name="DelCountry" select="$M810/SG10070[N1/N101 = $Del_id]/N4/N404"/>
 
 
 		<xsl:variable name="PayType" select="''"/>
 
-		<xsl:variable name="PayDate" select="''"/>
+		<xsl:variable name="PayDate" select="$M810/ITD/ITD06"/>
 
 		<xsl:variable name="Kontonr" select="''"/>
 
@@ -242,42 +233,34 @@
 		<xsl:variable name="PayTerms" select="''"/>
 
 
-		<xsl:variable name="AllowanceAmount" select="''"/>
+		<xsl:variable name="AllowanceAmount" select="string(sum($M810/SAC[SAC01 = 'A']/SAC05) div 100)"/>
 
-		<xsl:variable name="AllowanceReason" select="'Settlement Discount'"/>
+		<xsl:variable name="AllowanceReason" select="''"/>
 
-		<xsl:variable name="ChargeAmount" select="''"/>
+		<xsl:variable name="ChargeAmount" select="string(sum($M810/SAC[SAC01 = 'C']/SAC05) div 100)"/>
 
 		<xsl:variable name="ChargeReason" select="''"/>
 
 		<xsl:variable name="ChargeVatCat" select="''"/>
 
 
-		<xsl:variable name="TaxRate" select="'00'"/>
+		<xsl:variable name="TaxRate" select="$M810/TXI/TXI03"/>
 
-		<xsl:variable name="TaxRateCode">
-			<xsl:choose>
-				<xsl:when test="count($M210/K1[K101 = 'E']) &gt; 0"><xsl:value-of select="'E'"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="'Z'"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
+		<xsl:variable name="TaxRateCode" select="$M810/TXI/TXI06"/>
 
-		<xsl:variable name="TaxExemptReason">
-			<xsl:choose>
-				<xsl:when test="$TaxRateCode = 'E'"><xsl:value-of select="$M210/K1/K102"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
+		<xsl:variable name="TaxExemptReason" select="$M810/TXI/TXI10"/>
 
-		<xsl:variable name="TaxSchemeID" select="''"/>
+		<xsl:variable name="TaxSchemeID" select="$M810/TXI/TXI01"/>
 
-		<xsl:variable name="TaxAmount" select="''"/>
+		<xsl:variable name="TaxSchemeName" select="$M810/TXI/TXI01"/>
 
-		<xsl:variable name="TaxableAmount" select="$M210/B3/B307 div 100"/>
+		<xsl:variable name="TaxAmount" select="$M810/AMT[AMT01 = '3']/AMT02"/>
 
-		<xsl:variable name="LineTotal" select="$M210/B3/B307 div 100"/>
+		<xsl:variable name="TaxableAmount" select="$M810/AMT[AMT01 = '2']/AMT02"/>
 
-		<xsl:variable name="InvTotal" select="$M210/B3/B307 div 100"/>
+		<xsl:variable name="LineTotal" select="$M810/AMT[AMT01 = '1']/AMT02"/>
+
+		<xsl:variable name="InvTotal" select="string($M810/TDS/TDS01 div 100)"/>
 
 
 		<!-- Global conversions etc. -->
@@ -306,12 +289,13 @@
 		<xsl:variable name="fInvoiceTypeCode">
 			<xsl:choose>
 				<xsl:when test="$InvoiceTypeCode = 'VJ'"><xsl:value-of select="'380'"/></xsl:when>
-				<xsl:when test="$InvoiceTypeCode = 'PO'"><xsl:value-of select="'386'"/></xsl:when>
+				<xsl:when test="$InvoiceTypeCode = 'PP'"><xsl:value-of select="'386'"/></xsl:when>
+				<xsl:when test="$InvoiceTypeCode = 'P1'"><xsl:value-of select="'325'"/></xsl:when>
 				<xsl:otherwise><xsl:value-of select="'380'"/></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 
-		<xsl:variable name="h4" select="format-number(number(translate(string($LineTotal),',', '.')),'##.00')"/>
+		<xsl:variable name="h4" select="format-number(number(translate($LineTotal,',', '.')),'##.00')"/>
 		<xsl:variable name="fLineTotal">
 			<xsl:choose>
 				<xsl:when test="$h4 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
@@ -319,7 +303,7 @@
 			</xsl:choose>
 		</xsl:variable>
 
-		<xsl:variable name="h2" select="format-number(number(translate(string($TaxAmount),',', '.')),'##.00')"/>
+		<xsl:variable name="h2" select="format-number(number(translate($TaxAmount,',', '.')),'#0.00')"/>
 		<xsl:variable name="fTaxAmount">
 			<xsl:choose>
 				<xsl:when test="$h2 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
@@ -327,7 +311,7 @@
 			</xsl:choose>
 		</xsl:variable>
 
-		<xsl:variable name="h1" select="format-number(number(translate(string($TaxableAmount),',', '.')),'##.00')"/>
+		<xsl:variable name="h1" select="format-number(number(translate($TaxableAmount,',', '.')),'##.00')"/>
 		<xsl:variable name="fTaxableAmount">
 			<xsl:choose>
 				<xsl:when test="$h1 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
@@ -335,26 +319,39 @@
 			</xsl:choose>
 		</xsl:variable>
 
-		<xsl:variable name="h3" select="format-number(number(translate(string($InvTotal),',', '.')),'##.00')"/>
+		<xsl:variable name="fTaxRate">
+			<xsl:choose>
+				<xsl:when test="string($TaxRate)"><xsl:value-of select="$TaxRate"/></xsl:when>
+				<xsl:when test="$fTaxAmount = 0 or $fTaxableAmount = 0">00</xsl:when>
+				<xsl:otherwise><xsl:value-of select="format-number(($fTaxAmount div $fTaxableAmount) * 100,'##')"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="noTaxPercent">
+			<xsl:choose>
+				<xsl:when test="string($TaxRate)">false</xsl:when>
+				<xsl:when test="$fTaxAmount = 0 or $fTaxableAmount = 0">false</xsl:when>
+				<xsl:when test="Sum/TXI and not(string($TaxRate))">true</xsl:when>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="fTaxSchemeID">
+			<xsl:call-template name="TaxSchemeIDLocal">
+				<xsl:with-param name="p1" select="$TaxSchemeID"/>
+			</xsl:call-template>								
+		</xsl:variable>
+
+		<xsl:variable name="fTaxSchemeName">
+			<xsl:call-template name="TaxSchemeName">
+				<xsl:with-param name="p1" select="$TaxSchemeName"/>
+			</xsl:call-template>								
+		</xsl:variable>
+
+		<xsl:variable name="h3" select="format-number(number(translate($InvTotal,',', '.')),'##.00')"/>
 		<xsl:variable name="fInvTotal">
 			<xsl:choose>
 				<xsl:when test="$h3 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
 				<xsl:otherwise><xsl:value-of select="$h3"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-
-
-		<xsl:variable name="fAllowanceFlag">
-			<xsl:choose>
-				<xsl:when test="string($AllowanceAmount)"><xsl:value-of select="'true'"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="'false'"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-
-		<xsl:variable name="fChargeFlag">
-			<xsl:choose>
-				<xsl:when test="string($ChargeAmount)"><xsl:value-of select="'true'"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="'false'"/></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 
@@ -371,40 +368,6 @@
 			<xsl:choose>
 				<xsl:when test="$h9 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
 				<xsl:otherwise><xsl:value-of select="$h9"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-
-		<xsl:variable name="CountryCode" select="',AF,AD,AE,AG,AI,AL,AM,AN,AO,AQ,AR,AS,AT,AU,AW,AX,AZ,BA,BB,BD,BE,BF,BG,BH,BI,BJ,BL,BM,BN,BO,BR,BS,BT,BV,BW,BY,BZ,CA,CC,CD,CF,CG,CH,CI,CK,CL,CM,CN,CO,CR,CU,CV,CX,CY,CZ,DE,DJ,DK,DM,DO,DZ,EC,EE,EG,EH,ER,ES,ET,FI,FJ,FK,FM,FO,FR,GA,GB,GD,GE,GF,GG,GH,GI,GL,GM,GN,GP,GQ,GR,GS,GT,GU,GW,GY,HK,HM,HN,HR,HT,HU,ID,IE,IL,IM,IN,IO,IQ,IR,IS,IT,JE,JM,JO,JP,KE,KG,KH,KI,KM,KN,KP,KR,KW,KY,KZ,LA,LB,LC,LI,LK,LR,LS,LT,LU,LV,LY,MA,MC,MD,ME,MF,MG,MH,MK,ML,MM,MN,MO,MP,MQ,MR,MS,MT,MU,MV,MW,MX,MY,MZ,NA,NC,NE,NF,NG,NI,NL,NO,NP,NR,NU,NZ,OM,PA,PE,PF,PG,PH,PK,PL,PM,PN,PR,PS,PT,PW,PY,QA,RE,RO,RS,RU,RW,SA,SB,SC,SD,SE,SG,SH,SI,SJ,SK,SL,SM,SN,SO,SR,ST,SV,SY,SZ,TC,TD,TF,TG,TH,TJ,TK,TL,TM,TN,TO,TR,TT,TV,TW,TZ,UA,UG,UM,US,UY,UZ,VA,VC,VE,VG,VI,VN,VU,WF,WS,YE,YT,ZA,ZM,ZW,'"/>
-
-		<xsl:variable name="fSeCountry">
-			<xsl:choose>
-				<xsl:when test="contains($CountryCode, concat(',',$SeCountry,','))"><xsl:value-of select="$SeCountry"/></xsl:when>
-				<xsl:when test="$SeCountry = 'GBR'"><xsl:value-of select="'GB'"/></xsl:when>
-				<xsl:when test="$SeCountry = 'USA'"><xsl:value-of select="'US'"/></xsl:when>
-				<xsl:when test="$SeCountry = 'DNK'"><xsl:value-of select="'DK'"/></xsl:when>
-				<xsl:when test="$SeCountry = 'DEU'"><xsl:value-of select="'DE'"/></xsl:when>
-				<xsl:when test="$SeCountry = 'FRA'"><xsl:value-of select="'FR'"/></xsl:when>
-				<xsl:when test="$SeCountry = 'NLD'"><xsl:value-of select="'NL'"/></xsl:when>
-				<xsl:when test="$SeCountry = 'SGP'"><xsl:value-of select="'SG'"/></xsl:when>
-				<xsl:when test="$SeCountry = 'SWE'"><xsl:value-of select="'SE'"/></xsl:when>
-				<xsl:when test="$SeCountry = 'IRL'"><xsl:value-of select="'IE'"/></xsl:when>
-				<xsl:when test="$SeCountry = 'POL'"><xsl:value-of select="'PL'"/></xsl:when>
-			</xsl:choose>
-		</xsl:variable>
-
-		<xsl:variable name="fIpCountry">
-			<xsl:choose>
-				<xsl:when test="contains($CountryCode, concat(',',$IpCountry,','))"><xsl:value-of select="$IpCountry"/></xsl:when>
-				<xsl:when test="$IpCountry = 'GBR'"><xsl:value-of select="'GB'"/></xsl:when>
-				<xsl:when test="$IpCountry = 'USA'"><xsl:value-of select="'US'"/></xsl:when>
-				<xsl:when test="$IpCountry = 'DNK'"><xsl:value-of select="'DK'"/></xsl:when>
-				<xsl:when test="$IpCountry = 'DEU'"><xsl:value-of select="'DE'"/></xsl:when>
-				<xsl:when test="$IpCountry = 'FRA'"><xsl:value-of select="'FR'"/></xsl:when>
-				<xsl:when test="$IpCountry = 'NLD'"><xsl:value-of select="'NL'"/></xsl:when>
-				<xsl:when test="$IpCountry = 'SGP'"><xsl:value-of select="'SG'"/></xsl:when>
-				<xsl:when test="$IpCountry = 'SWE'"><xsl:value-of select="'SE'"/></xsl:when>
-				<xsl:when test="$IpCountry = 'IRL'"><xsl:value-of select="'IE'"/></xsl:when>
-				<xsl:when test="$IpCountry = 'POL'"><xsl:value-of select="'PL'"/></xsl:when>
 			</xsl:choose>
 		</xsl:variable>
 
@@ -438,12 +401,12 @@
 					<xsl:value-of select="(bbw:lookupTableValue('PartyTAXscheme', 'CountryCode', 'PartyTAXscheme', $SeCountry, 'TS:VAT'))[1]"
 						disable-output-escaping="no"/>
 				</xsl:otherwise>
-			</xsl:choose>							
+			</xsl:choose>								
 		</xsl:variable>
 
 		<xsl:variable name="SeP1">
 			<xsl:choose>
-				<xsl:when test="$fSeCountry = 'US' and string-length($SePartyLEGAL) = 11"><xsl:value-of select="'US:SSN'"/></xsl:when>
+				<xsl:when test="$SeCountry = 'US' and string-length($SePartyLEGAL) = 11"><xsl:value-of select="'US:SSN'"/></xsl:when>
 				<xsl:otherwise><xsl:value-of select="$SePartyLEGALscheme"/></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -461,43 +424,35 @@
 
 		<xsl:variable name="fIpPartyTAXscheme">
 			<xsl:choose>
-				<xsl:when test="string($SePartyTAXscheme)">
-					<xsl:value-of select="$SePartyTAXscheme"/>
+				<xsl:when test="string($IpPartyTAXscheme)">
+					<xsl:value-of select="$IpPartyTAXscheme"/>
 				</xsl:when>
-				<xsl:when test="$SeCountry = 'MY' and (string-length($SePartyTAX) = 12 or string-length($SePartyTAX) = 16)">
+				<xsl:when test="$IpCountry = 'MY' and (string-length($IpPartyTAX) = 12 or string-length($IpPartyTAX) = 16)">
 					<xsl:value-of select="'MY:GST'"/>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of select="(bbw:lookupTableValue('PartyTAXscheme', 'CountryCode', 'PartyTAXscheme', $SeCountry, 'TS:VAT'))[1]"
+					<xsl:value-of select="(bbw:lookupTableValue('PartyTAXscheme', 'CountryCode', 'PartyTAXscheme', $IpCountry, 'TS:VAT'))[1]"
 						disable-output-escaping="no"/>
 				</xsl:otherwise>
-			</xsl:choose>								
+			</xsl:choose>
 		</xsl:variable>
 
 		<xsl:variable name="IpP1">
 			<xsl:choose>
-				<xsl:when test="$fIpCountry = 'US' and string-length($IpPartyLEGAL) = 11"><xsl:value-of select="'US:SSN'"/></xsl:when>
+				<xsl:when test="$IpCountry = 'US' and string-length($IpPartyLEGAL) = 11"><xsl:value-of select="'US:SSN'"/></xsl:when>
 				<xsl:otherwise><xsl:value-of select="$IpPartyLEGALscheme"/></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 		<xsl:variable name="fIpPartyLEGALscheme">
 			<xsl:choose>
-				<xsl:when test="string($SePartyLEGALscheme)">
-					<xsl:value-of select="$SePartyLEGALscheme"/>
+				<xsl:when test="string($IpPartyLEGALscheme)">
+					<xsl:value-of select="$IpPartyLEGALscheme"/>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of select="(bbw:lookupTableValue('PartyLEGALscheme', 'CountryCode', 'PartyLEGALscheme', $SeCountry, 'VAT'))[1]"
+					<xsl:value-of select="(bbw:lookupTableValue('PartyLEGALscheme', 'CountryCode', 'PartyLEGALscheme', $IpCountry, 'VAT'))[1]"
 						disable-output-escaping="no"/>
 				</xsl:otherwise>
-			</xsl:choose>								
-		</xsl:variable>
-
-		<xsl:variable name="fTaxSchemeID">
-			<xsl:choose>
-				<xsl:when test="string($TaxSchemeID)"><xsl:value-of select="$TaxSchemeID"/></xsl:when>
-				<xsl:when test="$IpCountry = 'SG'"><xsl:value-of select="'GST'"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="'VAT'"/></xsl:otherwise>
-			</xsl:choose>							
+			</xsl:choose>
 		</xsl:variable>
 
 		<xsl:variable name="h15" select="$DocDate"/>
@@ -545,90 +500,6 @@
 			</xsl:choose>
 		</xsl:variable>
 		
-		<!-- Shippingfields -->
-		
-		<xsl:variable name="br">
-			<xsl:text>&#10;</xsl:text>
-		</xsl:variable>
-		
-		<xsl:variable name="PlaceOfDelivery">
-			<xsl:choose>
-				<xsl:when test="string($M210/SG10110/N1[N101 = 'CN']/N102)"><xsl:value-of select="concat('PlaceOfDelivery: ', $M210/SG10110/N1[N101 = 'CN']/N102, $br)"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		
-		<xsl:variable name="PlaceOfReceipt">
-			<xsl:choose>
-				<xsl:when test="string($M210/SG10110/N1[N101 = 'SH']/N102)"><xsl:value-of select="concat('PlaceOfReceipt: ', $M210/SG10110/N1[N101 = 'SH']/N102, $br)"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		
-		<xsl:variable name="BOL">
-			<xsl:choose>
-				<xsl:when test="string($M210/N9[N901='2I']/N902)"><xsl:value-of select="concat('B/L: ', $M210/N9[N901='2I']/N902, $br)"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		
-		<xsl:variable name="Equipment">
-			<xsl:choose>
-				<xsl:when test="string($M210/SG10160/N7/N702)"><xsl:value-of select="concat('Equipment: ', $M210/SG10160/N7/N702, $br)"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		
-		<xsl:variable name="ArrivalDate">
-			<xsl:choose>
-				<xsl:when test="exists($M210/G62[G6201='70'])"><xsl:value-of select="$M210/G62[G6201='70']/G6202"/></xsl:when>
-			</xsl:choose>
-		</xsl:variable>
-		
-		<xsl:variable name="DepartureDate">
-			<xsl:choose>
-				<xsl:when test="exists($M210/G62[G6201='69'])"><xsl:value-of select="$M210/G62[G6201='69']/G6202"/></xsl:when>
-			</xsl:choose>
-		</xsl:variable>
-		
-		<xsl:variable name="h20" select="$ArrivalDate"/>
-		<xsl:variable name="fArrivalDate">
-			<xsl:choose>
-				<xsl:when test="string-length($h20) = 10"><xsl:value-of select="$h20"/></xsl:when>
-				<xsl:when test="string-length($h20) = 8"><xsl:value-of select="concat(substring($h20, 1, 4), '-', substring($h20, 5, 2), '-', substring($h20, 7, 2))"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="$h20"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		<xsl:variable name="ffArrivalDate">
-			<xsl:choose>
-				<xsl:when test="string($ArrivalDate)"><xsl:value-of select="concat('ArrivalDate: ', $fArrivalDate, $br)"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		
-		<xsl:variable name="h21" select="$DepartureDate"/>
-		<xsl:variable name="fDepartureDate">
-			<xsl:choose>
-				<xsl:when test="string-length($h21) = 10"><xsl:value-of select="$h21"/></xsl:when>
-				<xsl:when test="string-length($h21) = 8"><xsl:value-of select="concat(substring($h21, 1, 4), '-', substring($h21, 5, 2), '-', substring($h21, 7, 2))"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="$h21"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		<xsl:variable name="ffDepartureDate">
-			<xsl:choose>
-				<xsl:when test="string($DepartureDate)"><xsl:value-of select="concat('DepartureDate: ', $fDepartureDate, $br)"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		
-		<xsl:variable name="fNote">
-			<xsl:choose>
-				<xsl:when test="$ShippingFlag = 'false'"><xsl:value-of select="$Note"/></xsl:when>
-				<xsl:when test="string($Note)"><xsl:value-of select="concat($PlaceOfReceipt, $PlaceOfDelivery, $Equipment, $BOL, $ffDepartureDate, $ffArrivalDate, 'Freetext: ', $Note)"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="concat($PlaceOfReceipt, $PlaceOfDelivery, $Equipment, $BOL, $ffDepartureDate, $ffArrivalDate)"/></xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-
 		<xsl:if test="$MSG">
 			<xsl:value-of select="metadata-util:put($MSG, 'com_babelway_messaging_context_message_reference', string(concat('INV', $DocID, '_', $SeCountry)))"/>
 		</xsl:if>
@@ -649,7 +520,18 @@
 
 			<cbc:InvoiceTypeCode listAgencyID="6" listID="UN/ECE 1001 Subset"><xsl:value-of select="$fInvoiceTypeCode"/></cbc:InvoiceTypeCode>
 
-			<xsl:if test="string($fNote)"><cbc:Note><xsl:value-of select="$fNote"/></cbc:Note></xsl:if>
+			<xsl:choose>
+				<xsl:when test="$M810/MSG[string(.)]">
+					<xsl:for-each select="$M810/MSG[string(.)]">
+						<cbc:Note><xsl:value-of select="./MSG01"/></cbc:Note>
+					</xsl:for-each>
+				</xsl:when>
+				<xsl:when test="$M810/NTE[string(.)]">
+					<xsl:for-each select="$M810/NTE[string(.)]">
+						<cbc:Note><xsl:value-of select="./NTE02"/></cbc:Note>
+					</xsl:for-each>
+				</xsl:when>
+			</xsl:choose>
 
 			<xsl:if test="string($TaxDate)"><cbc:TaxPointDate><xsl:value-of select="$fTaxDate"/></cbc:TaxPointDate></xsl:if>
 
@@ -683,7 +565,7 @@
 					<cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">BOL ID</cbc:DocumentTypeCode>
 				</cac:AdditionalDocumentReference>
 			</xsl:if>
-
+			
 			<xsl:if test="string($InvoiceVehicleNumber)">
 				<cac:AdditionalDocumentReference>
 					<cbc:ID><xsl:value-of select="$InvoiceVehicleNumber"/></cbc:ID>
@@ -753,7 +635,7 @@
 							<xsl:if test="string($SeState)"><cbc:CountrySubentity><xsl:value-of select="$SeState"/></cbc:CountrySubentity></xsl:if>
 							<xsl:if test="string($SeCountry)">
 								<cac:Country>
-									<cbc:IdentificationCode><xsl:value-of select="$fSeCountry"/></cbc:IdentificationCode>
+									<cbc:IdentificationCode><xsl:value-of select="$SeCountry"/></cbc:IdentificationCode>
 								</cac:Country>
 							</xsl:if>
 						</cac:PostalAddress>
@@ -846,6 +728,13 @@
 							<cbc:ID schemeID="TS:GLI"><xsl:value-of select="$IpPartyTSGLI"/></cbc:ID>
 						</cac:PartyIdentification>
 					</xsl:if>
+					<xsl:if test="string($IpPartyTSLEID)">
+						<cac:PartyIdentification>
+							<cbc:ID schemeID="TS:LEID">
+								<xsl:value-of select="$IpPartyTSLEID"/>
+							</cbc:ID>
+						</cac:PartyIdentification>
+					</xsl:if>
 					<xsl:if test="string($IpPartyGLN)">
 						<cac:PartyIdentification>
 							<cbc:ID schemeAgencyID="9" schemeID="GLN"><xsl:value-of select="$IpPartyGLN"/></cbc:ID>
@@ -874,7 +763,7 @@
 							<xsl:if test="string($IpState)"><cbc:CountrySubentity><xsl:value-of select="$IpState"/></cbc:CountrySubentity></xsl:if>
 							<xsl:if test="string($IpCountry)">
 								<cac:Country>
-									<cbc:IdentificationCode><xsl:value-of select="$fIpCountry"/></cbc:IdentificationCode>
+									<cbc:IdentificationCode><xsl:value-of select="$IpCountry"/></cbc:IdentificationCode>
 								</cac:Country>
 							</xsl:if>
 						</cac:PostalAddress>
@@ -905,15 +794,18 @@
 				</cac:Party>
 			</cac:AccountingCustomerParty>
 
-			<xsl:if test="(string($DelStreet1) and $DelStreet1 != $IpStreet1) or string($DelID) or string($fDelDate)">
+			<xsl:if test="string($DelStreet1) or string($DelID) or string($fDelDate)">
 				<cac:Delivery>
 					<xsl:if test="string($fDelDate)"><cbc:ActualDeliveryDate><xsl:value-of select="$fDelDate"/></cbc:ActualDeliveryDate></xsl:if>
-					<xsl:if test="(string($DelStreet1) and $DelStreet1 != $IpStreet1) or string($DelID)">
+					<xsl:if test="string($DelStreet1) or string($DelID) or string($DelDescription)">
 						<cac:DeliveryLocation>
 							<xsl:if test="string($DelID)">
 								<cbc:ID schemeAgencyID="9" schemeID="GLN"><xsl:value-of select="$DelID"/></cbc:ID>
 							</xsl:if>
-							<xsl:if test="string($DelStreet1) and $DelStreet1 != $IpStreet1">
+							<xsl:if test="string($DelDescription)">
+								<cbc:Description><xsl:value-of select="$DelDescription"/></cbc:Description>
+							</xsl:if>
+							<xsl:if test="string($DelStreet1)">
 								<cac:Address>
 									<cbc:AddressFormatCode listAgencyID="6" listID="UN/ECE 3477">5</cbc:AddressFormatCode>
 									<cbc:StreetName><xsl:value-of select="$DelStreet1"/></cbc:StreetName>
@@ -938,7 +830,9 @@
 					<xsl:choose>
 						<xsl:when test="$PayType = 'Konto'">
 							<cbc:PaymentMeansCode>42</cbc:PaymentMeansCode>
-							<xsl:if test="string($fPayDate)"><cbc:PaymentDueDate><xsl:value-of select="$fPayDate"/></cbc:PaymentDueDate></xsl:if>
+							<xsl:if test="string($fPayDate)">
+								<cbc:PaymentDueDate><xsl:value-of select="$fPayDate"/></cbc:PaymentDueDate>
+							</xsl:if>
 							<cbc:PaymentChannelCode listAgencyID="320" listID="urn:oioubl:codelist:paymentchannelcode-1.1">DK:BANK</cbc:PaymentChannelCode>
 							<cac:PayeeFinancialAccount>
 								<cbc:ID><xsl:value-of select="$Kontonr"/></cbc:ID>
@@ -951,7 +845,9 @@
 
 						<xsl:when test="$PayType = 'FIK71'">
 							<cbc:PaymentMeansCode>93</cbc:PaymentMeansCode>
-							<xsl:if test="string($fPayDate)"><cbc:PaymentDueDate><xsl:value-of select="$fPayDate"/></cbc:PaymentDueDate></xsl:if>
+							<xsl:if test="string($fPayDate)">
+								<cbc:PaymentDueDate><xsl:value-of select="$fPayDate"/></cbc:PaymentDueDate>
+							</xsl:if>
 							<cbc:PaymentChannelCode listAgencyID="320" listID="urn:oioubl:codelist:paymentchannelcode-1.1">DK:FIK</cbc:PaymentChannelCode>
 							<cbc:InstructionID><xsl:value-of select="$BetalingsID"/></cbc:InstructionID>
 							<cbc:PaymentID schemeAgencyID="320" schemeID="urn:oioubl:id:paymentid-1.1">71</cbc:PaymentID>
@@ -968,91 +864,223 @@
 				</cac:PaymentMeans>
 			</xsl:if>
 
-			<cac:PaymentTerms>
-				<cbc:ID>1</cbc:ID>
-				<cbc:PaymentMeansID>1</cbc:PaymentMeansID>
-				<xsl:if test="string($PayTerms)"><cbc:Note><xsl:value-of select="$PayTerms"/></cbc:Note></xsl:if>
-				<cbc:Amount currencyID="{$CurrencyCode}"><xsl:value-of select="$fInvTotal"/></cbc:Amount>
-			</cac:PaymentTerms>
+			<xsl:if test="$M810/ITD">
+				<xsl:for-each select="$M810/ITD">
 
-			<xsl:if test="$fAllowanceFlag = 'true'">
-				<cac:AllowanceCharge>
-					<cbc:ID>1</cbc:ID>
-					<cbc:ChargeIndicator>false</cbc:ChargeIndicator>
-					<xsl:if test="string($AllowanceReason)"><cbc:AllowanceChargeReason><xsl:value-of select="$AllowanceReason"/></cbc:AllowanceChargeReason></xsl:if>
-					<cbc:MultiplierFactorNumeric>1</cbc:MultiplierFactorNumeric>
-					<cbc:SequenceNumeric>1</cbc:SequenceNumeric>
-					<cbc:Amount currencyID="{$CurrencyCode}"><xsl:value-of select="$fAllowanceAmount"/></cbc:Amount>
-					<cbc:BaseAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fAllowanceAmount"/></cbc:BaseAmount>
-				</cac:AllowanceCharge>
+					<xsl:variable name="PayTermNote" select="./ITD12"/>
+
+					<xsl:variable name="SettlementDiscountPercent" select="./ITD03"/>
+
+					<xsl:variable name="PenaltySurchargePercent" select="./ITD15"/>
+
+					<cac:PaymentTerms>
+						<cbc:ID><xsl:value-of select="position()"/></cbc:ID>
+						<cbc:PaymentMeansID>1</cbc:PaymentMeansID>
+						<xsl:if test="string($PayTermNote)">
+							<cbc:Note>
+								<xsl:value-of select="$PayTermNote"/>
+							</cbc:Note>
+						</xsl:if>
+						<xsl:if test="string($SettlementDiscountPercent)">
+							<cbc:SettlementDiscountPercent>
+								<xsl:value-of select="$SettlementDiscountPercent"/>
+							</cbc:SettlementDiscountPercent>
+						</xsl:if>
+						<xsl:if test="string($PenaltySurchargePercent)">
+							<cbc:PenaltySurchargePercent>
+								<xsl:value-of select="$PenaltySurchargePercent"/>
+							</cbc:PenaltySurchargePercent>
+						</xsl:if>
+						<cbc:Amount currencyID="{$CurrencyCode}">
+							<xsl:value-of select="$fInvTotal"/>
+						</cbc:Amount>
+					</cac:PaymentTerms>
+				</xsl:for-each>
 			</xsl:if>
 
-			<xsl:if test="$fChargeFlag = 'true'">
-				<cac:AllowanceCharge>
-					<xsl:choose>
-						<xsl:when test="$fAllowanceFlag = 'true'"><cbc:ID>2</cbc:ID></xsl:when>
-						<xsl:otherwise><cbc:ID>1</cbc:ID></xsl:otherwise>
-					</xsl:choose>
-					<cbc:ChargeIndicator>true</cbc:ChargeIndicator>
-					<xsl:if test="string($ChargeReason)"><cbc:AllowanceChargeReason><xsl:value-of select="$ChargeReason"/></cbc:AllowanceChargeReason></xsl:if>
-					<cbc:MultiplierFactorNumeric>1</cbc:MultiplierFactorNumeric>
-					<cbc:SequenceNumeric>1</cbc:SequenceNumeric>
-					<cbc:Amount currencyID="{$CurrencyCode}"><xsl:value-of select="$fChargeAmount"/></cbc:Amount>
-					<cbc:BaseAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fChargeAmount"/></cbc:BaseAmount>
-					<xsl:choose>
-						<xsl:when test="$ChargeVatCat = 'ZeroRated'">
-							<cac:TaxCategory>
-								<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B">Z</cbc:ID>
-								<cbc:Percent>00</cbc:Percent>
-								<cac:TaxScheme>
-									<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$fTaxSchemeID"/></cbc:ID>
-									<cbc:Name><xsl:value-of select="$fTaxSchemeID"/></cbc:Name>
-								</cac:TaxScheme>
-							</cac:TaxCategory>
-						</xsl:when>
-						<xsl:otherwise>
-							<cac:TaxCategory>
-								<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$TaxRateCode"/></cbc:ID>
-								<cbc:Percent><xsl:value-of select="$TaxRate"/></cbc:Percent>
-								<cac:TaxScheme>
-									<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$fTaxSchemeID"/></cbc:ID>
-									<cbc:Name><xsl:value-of select="$fTaxSchemeID"/></cbc:Name>
-								</cac:TaxScheme>
-							</cac:TaxCategory>
-						</xsl:otherwise>
-					</xsl:choose>
-				</cac:AllowanceCharge>
-			</xsl:if>
+			<xsl:apply-templates select="Sum/SAC">
+				<xsl:with-param name="p1" select="$CurrencyCode"/>
+				<xsl:with-param name="p2" select="$fTaxSchemeID"/>
+				<xsl:with-param name="p3" select="$fTaxSchemeName"/>
+			</xsl:apply-templates>
 
 			<cac:TaxTotal>
 				<cbc:TaxAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fTaxAmount"/></cbc:TaxAmount>
-				<cac:TaxSubtotal>
-					<cbc:TaxableAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fTaxableAmount"/></cbc:TaxableAmount>
-					<cbc:TaxAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fTaxAmount"/></cbc:TaxAmount>
-					<cac:TaxCategory>
-						<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$TaxRateCode"/></cbc:ID>
-						<cbc:Percent><xsl:value-of select="$TaxRate"/></cbc:Percent>
-						<xsl:if test="string($TaxExemptReason)"><cbc:TaxExemptionReason><xsl:value-of select="$TaxExemptReason"/></cbc:TaxExemptionReason></xsl:if>
-						<cac:TaxScheme>
-							<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$fTaxSchemeID"/></cbc:ID>
-							<cbc:Name><xsl:value-of select="$fTaxSchemeID"/></cbc:Name>
-						</cac:TaxScheme>
-					</cac:TaxCategory>
-				</cac:TaxSubtotal>
+				<xsl:choose>
+					<xsl:when test="count($M810/TXI) &gt; 1 and $fTaxAmount &gt; 0">
+						<xsl:for-each select="$M810/TXI">
+							<xsl:variable name="t2" select="format-number(number(translate(./TXI08,',', '.')),'##.00')"/>
+							<xsl:variable name="ft2">
+								<xsl:choose>
+									<xsl:when test="$t2 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
+									<xsl:otherwise><xsl:value-of select="$t2"/></xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+							<!--xsl:variable name="noTaxPercent">
+								<xsl:choose>
+									<xsl:when test="string(./ele[3])">false</xsl:when>
+									<xsl:when test="$fTaxAmount = 0 or $ft2 = 0">false</xsl:when>
+									<xsl:otherwise>true</xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable-->
+							<xsl:variable name="t4">
+								<xsl:choose>
+									<xsl:when test="string(./TXI03)"><xsl:value-of select="./TXI03"/></xsl:when>
+									<xsl:when test="$fTaxAmount = 0 or $ft2 = 0">00</xsl:when>
+									<xsl:otherwise><xsl:value-of select="format-number(($fTaxAmount div $ft2) * 100,'##')"/></xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+							<xsl:variable name="t5" select="format-number(number(translate(./TXI02,',', '.')),'#0.00')"/>
+							<xsl:variable name="ft5">
+								<xsl:choose>
+									<xsl:when test="$t5 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
+									<xsl:otherwise><xsl:value-of select="$t5"/></xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+							<xsl:variable name="t3">
+								<xsl:choose>
+									<xsl:when test="./TXI06 = 'S'">S</xsl:when>
+									<xsl:when test="./TXI06 = 'AA'">AA</xsl:when>
+									<xsl:when test="./TXI06 = 'Z'">Z</xsl:when>
+									<xsl:when test="./TXI06 = 'E'">E</xsl:when>
+									<xsl:when test="$ft5 = 0">Z</xsl:when>
+									<xsl:otherwise>S</xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+							<xsl:variable name="t6">
+								<xsl:call-template name="TaxSchemeIDLocal">
+									<xsl:with-param name="p1" select="./TXI01"/>
+								</xsl:call-template>								
+							</xsl:variable>
+							<xsl:variable name="t7">
+								<xsl:call-template name="TaxSchemeName">
+									<xsl:with-param name="p1" select="./TXI01"/>
+								</xsl:call-template>								
+							</xsl:variable>
+							<xsl:variable name="t8">
+								<xsl:choose>
+									<xsl:when test="$t3 = 'E'"><xsl:value-of select="./TXI10"/></xsl:when>
+									<xsl:otherwise></xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+							<xsl:choose>
+								<xsl:when test="$noTaxPercent = 'true'">
+									<cac:TaxSubtotal>
+										<cbc:TaxableAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$ft2"/></cbc:TaxableAmount>
+										<cbc:TaxAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$ft5"/></cbc:TaxAmount>
+										<cac:TaxCategory>
+											<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$t3"/></cbc:ID>
+											<cbc:Percent><xsl:value-of select="$t4"/></cbc:Percent>
+											<cbc:BaseUnitMeasure unitCode="EA">1</cbc:BaseUnitMeasure>
+											<cbc:PerUnitAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fTaxAmount"/></cbc:PerUnitAmount>
+											<xsl:if test="string($t8)"><cbc:TaxExemptionReason><xsl:value-of select="$t8"/></cbc:TaxExemptionReason></xsl:if>
+											<cac:TaxScheme>
+												<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$t6"/></cbc:ID>
+												<cbc:Name><xsl:value-of select="$t7"/></cbc:Name>
+											</cac:TaxScheme>
+										</cac:TaxCategory>
+									</cac:TaxSubtotal>
+								</xsl:when>
+								<xsl:otherwise>
+									<cac:TaxSubtotal>
+										<cbc:TaxableAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$ft2"/></cbc:TaxableAmount>
+										<cbc:TaxAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$ft5"/></cbc:TaxAmount>
+										<cac:TaxCategory>
+											<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$t3"/></cbc:ID>
+											<cbc:Percent><xsl:value-of select="$t4"/></cbc:Percent>
+											<xsl:if test="string($t8)"><cbc:TaxExemptionReason><xsl:value-of select="$t8"/></cbc:TaxExemptionReason></xsl:if>
+											<cac:TaxScheme>
+												<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$t6"/></cbc:ID>
+												<cbc:Name><xsl:value-of select="$t7"/></cbc:Name>
+											</cac:TaxScheme>
+										</cac:TaxCategory>
+									</cac:TaxSubtotal>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:for-each>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:choose>
+							<xsl:when test="$fTaxAmount &gt; 0">
+								<xsl:variable name="t3">
+									<xsl:choose>
+										<xsl:when test="$TaxRateCode = 'S'">S</xsl:when>
+										<xsl:when test="$TaxRateCode = 'AA'">AA</xsl:when>
+										<xsl:otherwise>S</xsl:otherwise>
+									</xsl:choose>
+								</xsl:variable>
+								<xsl:choose>
+									<xsl:when test="$noTaxPercent = 'true'">
+										<cac:TaxSubtotal>
+											<cbc:TaxableAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fTaxableAmount"/></cbc:TaxableAmount>
+											<cbc:TaxAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fTaxAmount"/></cbc:TaxAmount>
+											<cac:TaxCategory>
+												<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$t3"/></cbc:ID>
+												<cbc:Percent><xsl:value-of select="$fTaxRate"/></cbc:Percent>
+												<cbc:BaseUnitMeasure unitCode="EA">1</cbc:BaseUnitMeasure>
+												<cbc:PerUnitAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fTaxAmount"/></cbc:PerUnitAmount>
+												<cac:TaxScheme>
+													<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$fTaxSchemeID"/></cbc:ID>
+													<cbc:Name><xsl:value-of select="$fTaxSchemeName"/></cbc:Name>
+												</cac:TaxScheme>
+											</cac:TaxCategory>
+										</cac:TaxSubtotal>
+									</xsl:when>
+									<xsl:otherwise>
+										<cac:TaxSubtotal>
+											<cbc:TaxableAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fTaxableAmount"/></cbc:TaxableAmount>
+											<cbc:TaxAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fTaxAmount"/></cbc:TaxAmount>
+											<cac:TaxCategory>
+												<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$t3"/></cbc:ID>
+												<cbc:Percent><xsl:value-of select="$fTaxRate"/></cbc:Percent>
+												<cac:TaxScheme>
+													<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$fTaxSchemeID"/></cbc:ID>
+													<cbc:Name><xsl:value-of select="$fTaxSchemeName"/></cbc:Name>
+												</cac:TaxScheme>
+											</cac:TaxCategory>
+										</cac:TaxSubtotal>
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:variable name="t3">
+									<xsl:choose>
+										<xsl:when test="$TaxRateCode = 'Z'">Z</xsl:when>
+										<xsl:when test="$TaxRateCode = 'E'">E</xsl:when>
+										<xsl:otherwise>Z</xsl:otherwise>
+									</xsl:choose>
+								</xsl:variable>
+								<cac:TaxSubtotal>
+									<cbc:TaxableAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fTaxableAmount"/></cbc:TaxableAmount>
+									<cbc:TaxAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="'0.00'"/></cbc:TaxAmount>
+									<cac:TaxCategory>
+										<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$t3"/></cbc:ID>
+										<cbc:Percent>00</cbc:Percent>
+										<xsl:if test="string($TaxExemptReason) and $TaxRateCode = 'E'"><cbc:TaxExemptionReason><xsl:value-of select="$TaxExemptReason"/></cbc:TaxExemptionReason></xsl:if>
+										<cac:TaxScheme>
+											<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$fTaxSchemeID"/></cbc:ID>
+											<cbc:Name><xsl:value-of select="$fTaxSchemeName"/></cbc:Name>
+										</cac:TaxScheme>
+									</cac:TaxCategory>
+								</cac:TaxSubtotal>
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:otherwise>
+				</xsl:choose>
 			</cac:TaxTotal>
 
 			<cac:LegalMonetaryTotal>
 				<cbc:LineExtensionAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fLineTotal"/></cbc:LineExtensionAmount>
 				<cbc:TaxExclusiveAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fTaxAmount"/></cbc:TaxExclusiveAmount>
 				<cbc:TaxInclusiveAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fInvTotal"/></cbc:TaxInclusiveAmount>
-				<xsl:if test="$fAllowanceFlag = 'true'"><cbc:AllowanceTotalAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fAllowanceAmount"/></cbc:AllowanceTotalAmount></xsl:if>
-				<xsl:if test="$fChargeFlag = 'true'"><cbc:ChargeTotalAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fChargeAmount"/></cbc:ChargeTotalAmount></xsl:if>
+				<xsl:if test="$fAllowanceAmount &gt; 0"><cbc:AllowanceTotalAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fAllowanceAmount"/></cbc:AllowanceTotalAmount></xsl:if>
+				<xsl:if test="$fChargeAmount &gt; 0"><cbc:ChargeTotalAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fChargeAmount"/></cbc:ChargeTotalAmount></xsl:if>
 				<cbc:PayableAmount currencyID ="{$CurrencyCode}"><xsl:value-of select="$fInvTotal"/></cbc:PayableAmount>
 			</cac:LegalMonetaryTotal>
 
 
 			<!-- InvoiceLine -->
-			<xsl:for-each select="$M210/SG20120">
+			<xsl:for-each select="$M810/SG20010">
 
 				<cac:InvoiceLine>
 					<!-- Variable -->
@@ -1060,53 +1088,55 @@
 
 					<!-- Line fields -->
 
-					<xsl:variable name="LineID" select="LX/LX01"/>
+					<xsl:variable name="LineID" select="IT1/IT101"/>
 
-					<xsl:variable name="LineAccCost" select="N9[N901='79']/N902"/>
+					<xsl:variable name="LineAccCost" select="REF[REF01 = '79']/REF02"/>
 
-					<xsl:variable name="LineRefID" select="''"/>
+					<xsl:variable name="LineRefID" select="REF[REF01 = 'BV']/REF02"/>
 
-					<xsl:variable name="LineOrderID" select="''"/>
+					<xsl:variable name="LineOrderID" select="REF[REF01 = 'PO']/REF02"/>
 
-					<xsl:variable name="LineFileReferenceID" select="''"/>
+					<xsl:variable name="LineFileReferenceID" select="REF[REF01 = 'CR']/REF02"/>
 
-					<xsl:variable name="LineBOLReferenceID" select="''"/>
+					<xsl:variable name="LineBOLReferenceID" select="REF[REF01 = 'BM']/REF02"/>
 
-					<xsl:variable name="LineVehicleNumber" select="N9[N901='VT']/N902"/>
+					<xsl:variable name="LineVehicleNumber" select="REF[REF01 = 'VT']/REF02"/>
 
 					<xsl:variable name="LineNote" select="''"/>
 
 					<xsl:variable name="ItemIdType" select="''"/>
 
-					<xsl:variable name="ItemId" select="L5/L503"/>
+					<xsl:variable name="ItemId" select="IT1/IT107"/>
 
-					<xsl:variable name="ItemName" select="L5/L502"/>
+					<xsl:variable name="ItemName" select="SG20060/PID/PID05"/>
 
-					<xsl:variable name="Quantity" select="'1'"/>
+					<xsl:variable name="Quantity" select="IT1/IT102"/>
 
 					<xsl:variable name="UnitCode" select="'EA'"/>
 
-					<xsl:variable name="UnitPrice" select="L1/L104 div 100"/>
+					<xsl:variable name="UnitPrice" select="IT1/IT104"/>
 
 					<xsl:variable name="LineAllowanceAmount" select="''"/>
 
 					<xsl:variable name="LineAllowanceReason" select="''"/>
 
-					<xsl:variable name="LineTaxRate" select="''"/>
+					<xsl:variable name="LineTaxRate" select="TXI/TXI03"/>
 
-					<xsl:variable name="LineTaxExemptReason" select="$TaxExemptReason"/>
+					<xsl:variable name="LineTaxExemptReason" select="TXI/TXI10"/>
 
-					<xsl:variable name="LineTaxRateCode" select="$TaxRateCode"/>
+					<xsl:variable name="LineTaxRateCode" select="TXI/TXI06"/>
 
-					<xsl:variable name="LineTaxSchemeID" select="''"/>
+					<xsl:variable name="LineTaxSchemeID" select="TXI/TXI01"/>
 
-					<xsl:variable name="LineTaxAmount" select="''"/>
+					<xsl:variable name="LineTaxSchemeName" select="TXI/TXI01"/>
 
-					<xsl:variable name="LineAmount" select="L1/L104 div 100"/>
+					<xsl:variable name="LineTaxAmount" select="TXI/TXI02"/>
+
+					<xsl:variable name="LineAmount" select="IT1/IT104"/>
 
 
 					<!-- Konverteringer etc. -->
-					<xsl:variable name="fQuantity" select="format-number(number(translate($Quantity,',', '.')),'##.00')"/>
+					<xsl:variable name="fQuantity" select="number(translate($Quantity,',', '.'))"/>
 
 					<xsl:variable name="fItemName" select="substring($ItemName, 1, 40)"/>
 
@@ -1126,7 +1156,7 @@
 						</xsl:choose>
 					</xsl:variable>
 
-					<xsl:variable name="l5" select="format-number(number(translate(string($LineAllowanceAmount),',', '.')),'##.00')"/>
+					<xsl:variable name="l5" select="format-number(number(translate($LineAllowanceAmount,',', '.')),'##.00')"/>
 					<xsl:variable name="fLineAllowanceAmount">
 						<xsl:choose>
 							<xsl:when test="$l5 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
@@ -1134,9 +1164,19 @@
 						</xsl:choose>
 					</xsl:variable>
 
-					<xsl:variable name="l1" select="format-number(number(translate(string($LineAmount),',', '.')),'##.00')"/>
+					<xsl:variable name="l3" select="format-number(number(translate($UnitPrice,',', '.')),'##.00##')"/>
+					<xsl:variable name="fUnitPrice">
+						<xsl:choose>
+							<xsl:when test="$l3 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
+							<xsl:otherwise><xsl:value-of select="$l3"/></xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+
+					<xsl:variable name="l1" select="format-number(number(translate($LineAmount,',', '.')),'##.00')"/>
 					<xsl:variable name="fLineAmount">
 						<xsl:choose>
+							<xsl:when test="$fQuantity = 0 or not(number($fQuantity))"><xsl:value-of select="$l1"/></xsl:when>
+							<xsl:when test="$fQuantity != 1"><xsl:value-of select="format-number($fUnitPrice * $fQuantity, '##.00')"/></xsl:when>
 							<xsl:when test="$l1 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
 							<xsl:otherwise><xsl:value-of select="$l1"/></xsl:otherwise>
 						</xsl:choose>
@@ -1155,15 +1195,7 @@
 						</xsl:choose>
 					</xsl:variable>
 
-					<xsl:variable name="l3" select="format-number(number(translate(string($UnitPrice),',', '.')),'##.00')"/>
-					<xsl:variable name="fUnitPrice">
-						<xsl:choose>
-							<xsl:when test="$l3 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
-							<xsl:otherwise><xsl:value-of select="$l3"/></xsl:otherwise>
-						</xsl:choose>
-					</xsl:variable>
-
-					<xsl:variable name="l4" select="format-number(number(translate(string($LineTaxAmount),',', '.')),'##.00')"/>
+					<xsl:variable name="l4" select="format-number(number(translate($LineTaxAmount,',', '.')),'#0.00')"/>
 					<xsl:variable name="fLineTaxAmount">
 						<xsl:choose>
 							<xsl:when test="$l4 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
@@ -1173,9 +1205,20 @@
 
 					<xsl:variable name="fLineTaxRateCode">
 						<xsl:choose>
-							<xsl:when test="string($LineTaxRateCode)"><xsl:value-of select="$LineTaxRateCode"/></xsl:when>
-							<xsl:when test="$fLineTaxAmount = 0">Z</xsl:when>
+							<xsl:when test="$LineTaxRateCode = 'S'">S</xsl:when>
+							<xsl:when test="$LineTaxRateCode = 'AA'">AA</xsl:when>
+							<xsl:when test="$LineTaxRateCode = 'Z'">Z</xsl:when>
+							<xsl:when test="$LineTaxRateCode = 'E'">E</xsl:when>
+							<xsl:when test="$fLineTaxAmount = 0 and $fLineAmount != 0">Z</xsl:when>
 							<xsl:otherwise>S</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+
+					<xsl:variable name="noLineTaxPercent">
+						<xsl:choose>
+							<xsl:when test="string($LineTaxRate)">false</xsl:when>
+							<xsl:when test="$fLineTaxAmount = 0 or $fLineAmount = 0">false</xsl:when>
+							<xsl:when test="TXI and not(string($LineTaxRate))">true</xsl:when>
 						</xsl:choose>
 					</xsl:variable>
 
@@ -1187,11 +1230,23 @@
 						</xsl:choose>
 					</xsl:variable>
 
-					<xsl:variable name="fLineTaxSchemeID">
+					<xsl:variable name="fLineTaxExemptReason">
 						<xsl:choose>
-							<xsl:when test="string($LineTaxSchemeID)"><xsl:value-of select="$LineTaxSchemeID"/></xsl:when>
-							<xsl:otherwise><xsl:value-of select="$fTaxSchemeID"/></xsl:otherwise>
+							<xsl:when test="$LineTaxRateCode = 'E'"><xsl:value-of select="$LineTaxExemptReason"/></xsl:when>
+							<xsl:otherwise></xsl:otherwise>
 						</xsl:choose>
+					</xsl:variable>
+
+					<xsl:variable name="fLineTaxSchemeID">
+						<xsl:call-template name="TaxSchemeIDLocal">
+							<xsl:with-param name="p1" select="$LineTaxSchemeID"/>
+						</xsl:call-template>								
+					</xsl:variable>
+
+					<xsl:variable name="fLineTaxSchemeName">
+						<xsl:call-template name="TaxSchemeName">
+							<xsl:with-param name="p1" select="$LineTaxSchemeName"/>
+						</xsl:call-template>								
 					</xsl:variable>
 
 
@@ -1243,33 +1298,47 @@
 						</cac:DocumentReference>
 					</xsl:if>
 
-					<xsl:if test="$fLineAllowanceFlag = 'true'">
-						<cac:AllowanceCharge>
-							<cbc:ID>1</cbc:ID>
-							<cbc:ChargeIndicator>false</cbc:ChargeIndicator>
-							<xsl:if test="string($LineAllowanceReason)"><cbc:AllowanceChargeReason><xsl:value-of select="$LineAllowanceReason"/></cbc:AllowanceChargeReason></xsl:if>
-							<cbc:MultiplierFactorNumeric>1</cbc:MultiplierFactorNumeric>
-							<cbc:SequenceNumeric>1</cbc:SequenceNumeric>
-							<cbc:Amount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineAllowanceAmount"/></cbc:Amount>
-							<cbc:BaseAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineAllowanceAmount"/></cbc:BaseAmount>
-						</cac:AllowanceCharge>
-					</xsl:if>
+					<xsl:apply-templates select="SAC">
+						<xsl:with-param name="p1" select="$CurrencyCode"/>
+						<xsl:with-param name="p2" select="$fLineTaxSchemeID"/>
+					</xsl:apply-templates>
 
 					<cac:TaxTotal>
 						<cbc:TaxAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineTaxAmount"/></cbc:TaxAmount>
-						<cac:TaxSubtotal>
-								<cbc:TaxableAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineAmount"/></cbc:TaxableAmount>
-								<cbc:TaxAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineTaxAmount"/></cbc:TaxAmount>
-								<cac:TaxCategory>
-									<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$fLineTaxRateCode"/></cbc:ID>
-									<cbc:Percent><xsl:value-of select="$fLineTaxRate"/></cbc:Percent>
-									<xsl:if test="string($LineTaxExemptReason)"><cbc:TaxExemptionReason><xsl:value-of select="$LineTaxExemptReason"/></cbc:TaxExemptionReason></xsl:if>
-									<cac:TaxScheme>
-										<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$fLineTaxSchemeID"/></cbc:ID>
-										<cbc:Name><xsl:value-of select="$fLineTaxSchemeID"/></cbc:Name>
-									</cac:TaxScheme>
-								</cac:TaxCategory>
-						</cac:TaxSubtotal>
+						<xsl:choose>
+							<xsl:when test="$noLineTaxPercent = 'true'">
+								<cac:TaxSubtotal>
+										<cbc:TaxableAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineAmount"/></cbc:TaxableAmount>
+										<cbc:TaxAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineTaxAmount"/></cbc:TaxAmount>
+										<cac:TaxCategory>
+											<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$fLineTaxRateCode"/></cbc:ID>
+											<cbc:Percent><xsl:value-of select="$fLineTaxRate"/></cbc:Percent>
+											<cbc:BaseUnitMeasure unitCode="EA">1</cbc:BaseUnitMeasure>
+											<cbc:PerUnitAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineTaxAmount"/></cbc:PerUnitAmount>
+											<xsl:if test="string($fLineTaxExemptReason)"><cbc:TaxExemptionReason><xsl:value-of select="$fLineTaxExemptReason"/></cbc:TaxExemptionReason></xsl:if>
+											<cac:TaxScheme>
+												<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$fLineTaxSchemeID"/></cbc:ID>
+												<cbc:Name><xsl:value-of select="$fLineTaxSchemeName"/></cbc:Name>
+											</cac:TaxScheme>
+										</cac:TaxCategory>
+								</cac:TaxSubtotal>
+							</xsl:when>
+							<xsl:otherwise>
+								<cac:TaxSubtotal>
+										<cbc:TaxableAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineAmount"/></cbc:TaxableAmount>
+										<cbc:TaxAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fLineTaxAmount"/></cbc:TaxAmount>
+										<cac:TaxCategory>
+											<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$fLineTaxRateCode"/></cbc:ID>
+											<cbc:Percent><xsl:value-of select="$fLineTaxRate"/></cbc:Percent>
+											<xsl:if test="string($fLineTaxExemptReason)"><cbc:TaxExemptionReason><xsl:value-of select="$fLineTaxExemptReason"/></cbc:TaxExemptionReason></xsl:if>
+											<cac:TaxScheme>
+												<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$fLineTaxSchemeID"/></cbc:ID>
+												<cbc:Name><xsl:value-of select="$fLineTaxSchemeName"/></cbc:Name>
+											</cac:TaxScheme>
+										</cac:TaxCategory>
+								</cac:TaxSubtotal>
+							</xsl:otherwise>
+						</xsl:choose>
 					</cac:TaxTotal>
 
 					<cac:Item>
@@ -1308,15 +1377,209 @@
 	<!--           Templates            -->
 	<!-- .............................. -->
 
-	<!--  Header K1 -->
-	<xsl:template match="MESSAGES/M210/K1">
-		<xsl:variable name="t1">
+
+	<!-- TaxSchemeIDLocal -->
+	<xsl:template name="TaxSchemeIDLocal">
+		<xsl:param name="p1"/>
+		<xsl:variable name="ft1">
 			<xsl:choose>
-				<xsl:when test="./K101 = 'E'"><xsl:value-of select="''"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="./K101"/></xsl:otherwise>
+				<xsl:when test="$p1 = 'VA'">VAT</xsl:when>
+				<xsl:when test="$p1 = 'GS'">GST</xsl:when>
+				<xsl:when test="$p1 = 'CS'">LOC</xsl:when>
+				<xsl:when test="$p1 = 'LT'">STT</xsl:when>
+				<xsl:when test="$p1 = 'SP'">STT</xsl:when>
+				<xsl:when test="$p1 = 'SL'">STT</xsl:when>
+				<xsl:when test="$p1 = 'LS'">STT</xsl:when>
+				<xsl:when test="$p1 = 'ST'">STT</xsl:when>
+				<xsl:when test="$p1 = 'SU'">STT</xsl:when>
+				<xsl:when test="$p1 = 'TX'">OTH</xsl:when>
+				<xsl:otherwise>OTH</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
-		<xsl:value-of select="$t1"/>
+		<xsl:value-of select="$ft1"/>
+	</xsl:template>
+
+
+	<!-- TaxSchemeName -->
+	<xsl:template name="TaxSchemeName">
+		<xsl:param name="p1"/>
+		<xsl:variable name="ft1">
+			<xsl:choose>
+				<xsl:when test="$p1 = 'VA'">VAT</xsl:when>
+				<xsl:when test="$p1 = 'GS'">GST</xsl:when>
+				<xsl:when test="$p1 = 'CS'">LOC</xsl:when>
+				<xsl:when test="$p1 = 'LT'">STT</xsl:when>
+				<xsl:when test="$p1 = 'SP'">STT</xsl:when>
+				<xsl:when test="$p1 = 'SL'">STT</xsl:when>
+				<xsl:when test="$p1 = 'LS'">STT</xsl:when>
+				<xsl:when test="$p1 = 'ST'">STT</xsl:when>
+				<xsl:when test="$p1 = 'SU'">STT</xsl:when>
+				<xsl:when test="$p1 = 'TX'">OTH</xsl:when>
+				<xsl:when test="string($p1)"><xsl:value-of select="$p1"/></xsl:when>
+				<xsl:otherwise>OTH</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:value-of select="$ft1"/>
+	</xsl:template>
+
+
+	<!--  Header ALC -->
+	<xsl:template match="MESSAGES/M810/SAC">
+		<xsl:param name="p1"/>
+		<xsl:param name="p2"/>
+		<xsl:param name="p3"/>
+
+		<xsl:variable name="CurrencyCode" select="$p1"/>
+
+		<xsl:variable name="fTaxSchemeID" select="$p2"/>
+
+		<xsl:variable name="fTaxSchemeName" select="$p3"/>
+
+		<xsl:variable name="AlcAmount" select="./SAC05 div 100"/>
+
+		<xsl:variable name="h1" select="format-number(number(translate($AlcAmount,',', '.')),'##.00')"/>
+		<xsl:variable name="fAlcAmount">
+			<xsl:choose>
+				<xsl:when test="$h1 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="$h1"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="fAlcIndicator">
+			<xsl:choose>
+				<xsl:when test="./SAC01 = 'A'"><xsl:value-of select="'false'"/></xsl:when>
+				<xsl:when test="./SAC01 = 'C'"><xsl:value-of select="'true'"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="'true'"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="fTaxRate">
+			<xsl:choose>
+				<xsl:when test="number(./SAC13)"><xsl:value-of select="translate(./SAC13,',', '.')"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="'00'"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="fTaxRateCode">
+			<xsl:choose>
+				<xsl:when test="$fTaxRate &gt; 0"><xsl:value-of select="'S'"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="'Z'"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="AlcTaxSchemeID">
+			<xsl:call-template name="TaxSchemeIDLocal">
+				<xsl:with-param name="p1" select="./SAC12"/>
+			</xsl:call-template>								
+		</xsl:variable>
+
+		<xsl:variable name="AlcTaxSchemeName">
+			<xsl:call-template name="TaxSchemeName">
+				<xsl:with-param name="p1" select="./SAC12"/>
+			</xsl:call-template>								
+		</xsl:variable>
+
+		<xsl:variable name="fAlcReason">
+			<xsl:choose>
+				<xsl:when test="string(./SAC15)"><xsl:value-of select="./SAC15"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="'n/a'"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="TaxExemptReason" select="''"/>
+
+		<xsl:variable name="fTaxExemptReason">
+			<xsl:choose>
+				<xsl:when test="$fTaxRate = 0"><xsl:value-of select="$TaxExemptReason"/></xsl:when>
+				<xsl:otherwise></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:if test="$fAlcAmount &gt; 0">
+			<cac:AllowanceCharge>
+				<cbc:ID><xsl:value-of select="position()"/></cbc:ID>
+				<cbc:ChargeIndicator><xsl:value-of select="$fAlcIndicator"/></cbc:ChargeIndicator>
+				<cbc:AllowanceChargeReason><xsl:value-of select="$fAlcReason"/></cbc:AllowanceChargeReason>
+				<cbc:MultiplierFactorNumeric>1</cbc:MultiplierFactorNumeric>
+				<cbc:SequenceNumeric>1</cbc:SequenceNumeric>
+				<cbc:Amount currencyID="{$CurrencyCode}"><xsl:value-of select="$fAlcAmount"/></cbc:Amount>
+				<cbc:BaseAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fAlcAmount"/></cbc:BaseAmount>
+				<cac:TaxCategory>
+					<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305" schemeVersionID="D08B"><xsl:value-of select="$fTaxRateCode"/></cbc:ID>
+					<cbc:Percent><xsl:value-of select="$fTaxRate"/></cbc:Percent>
+					<xsl:if test="string($fTaxExemptReason)"><cbc:TaxExemptionReason><xsl:value-of select="$fTaxExemptReason"/></cbc:TaxExemptionReason></xsl:if>
+					<cac:TaxScheme>
+						<cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153 Subset" schemeVersionID="D08B"><xsl:value-of select="$AlcTaxSchemeID"/></cbc:ID>
+						<cbc:Name><xsl:value-of select="$AlcTaxSchemeName"/></cbc:Name>
+					</cac:TaxScheme>
+				</cac:TaxCategory>
+			</cac:AllowanceCharge>
+		</xsl:if>
+	</xsl:template>
+
+
+	<!--  Line ALC -->
+	<xsl:template match="SAC">
+		<xsl:param name="p1"/>
+		<xsl:param name="p2"/>
+
+		<xsl:variable name="CurrencyCode" select="$p1"/>
+
+		<xsl:variable name="fLineTaxSchemeID" select="$p2"/>
+
+		<xsl:variable name="AlcAmount" select="./SAC05 div 100"/>
+
+		<xsl:variable name="h1" select="format-number(number(translate($AlcAmount,',', '.')),'##.00')"/>
+		<xsl:variable name="fAlcAmount">
+			<xsl:choose>
+				<xsl:when test="$h1 = 'NaN'"><xsl:value-of select="'0.00'"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="$h1"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="fAllowanceFlag">
+			<xsl:choose>
+				<xsl:when test="./SAC01 = 'A'"><xsl:value-of select="'true'"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="'false'"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="fChargeFlag">
+			<xsl:choose>
+				<xsl:when test="./SAC01 = 'C'"><xsl:value-of select="'true'"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="'false'"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="fAlcReason">
+			<xsl:choose>
+				<xsl:when test="string(./SAC15)"><xsl:value-of select="./SAC15"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="'n/a'"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:if test="$fAllowanceFlag = 'true'">
+			<cac:AllowanceCharge>
+				<cbc:ID><xsl:value-of select="position()"/></cbc:ID>
+				<cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+				<cbc:AllowanceChargeReason><xsl:value-of select="$fAlcReason"/></cbc:AllowanceChargeReason>
+				<cbc:MultiplierFactorNumeric>1</cbc:MultiplierFactorNumeric>
+				<cbc:SequenceNumeric>1</cbc:SequenceNumeric>
+				<cbc:Amount currencyID="{$CurrencyCode}"><xsl:value-of select="$fAlcAmount"/></cbc:Amount>
+				<cbc:BaseAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fAlcAmount"/></cbc:BaseAmount>
+			</cac:AllowanceCharge>
+		</xsl:if>
+		<xsl:if test="$fChargeFlag = 'true'">
+			<cac:AllowanceCharge>
+				<cbc:ID><xsl:value-of select="position()"/></cbc:ID>
+				<cbc:ChargeIndicator>true</cbc:ChargeIndicator>
+				<cbc:AllowanceChargeReason><xsl:value-of select="$fAlcReason"/></cbc:AllowanceChargeReason>
+				<cbc:MultiplierFactorNumeric>1</cbc:MultiplierFactorNumeric>
+				<cbc:SequenceNumeric>1</cbc:SequenceNumeric>
+				<cbc:Amount currencyID="{$CurrencyCode}"><xsl:value-of select="$fAlcAmount"/></cbc:Amount>
+				<cbc:BaseAmount currencyID="{$CurrencyCode}"><xsl:value-of select="$fAlcAmount"/></cbc:BaseAmount>
+			</cac:AllowanceCharge>
+		</xsl:if>
 	</xsl:template>
 
 </xsl:stylesheet>

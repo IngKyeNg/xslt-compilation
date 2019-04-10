@@ -7,7 +7,7 @@
 		publisher= "Tradeshift"
 		creator= "IngKye Ng, Tradeshift"
 		created= 2019-02-14
-		modified= 2019-02-26
+		modified= 2019-04-05
 		issued= 2019-02-14
 		
 ******************************************************************************************************************
@@ -141,6 +141,7 @@
     			<xsl:when test="exists($INVOIC/SG2/NAD[NAD0101 = 'PE'])"><xsl:value-of select="$INVOIC/SG2/NAD[NAD0101 = 'PE']/NAD0101"/></xsl:when>
     			<xsl:when test="exists($INVOIC/SG2/NAD[NAD0101 = 'II'])"><xsl:value-of select="$INVOIC/SG2/NAD[NAD0101 = 'II']/NAD0101"/></xsl:when>
     			<xsl:when test="exists($INVOIC/SG2/NAD[NAD0101 = 'SE'])"><xsl:value-of select="$INVOIC/SG2/NAD[NAD0101 = 'SE']/NAD0101"/></xsl:when>
+    			<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
     		</xsl:choose>
     	</xsl:variable>
 
@@ -332,6 +333,7 @@
 				<xsl:when test="exists($INVOIC/SG2/NAD[NAD0101 = 'BY'])"><xsl:value-of select="$INVOIC/SG2/NAD[NAD0101 = 'BY']/NAD0101"/></xsl:when>
 				<xsl:when test="exists($INVOIC/SG2/NAD[NAD0101 = 'PR'])"><xsl:value-of select="$INVOIC/SG2/NAD[NAD0101 = 'PR']/NAD0101"/></xsl:when>
 				<xsl:when test="exists($INVOIC/SG2/NAD[NAD0101 = 'IV'])"><xsl:value-of select="$INVOIC/SG2/NAD[NAD0101 = 'IV']/NAD0101"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="''"/></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 
@@ -816,8 +818,8 @@
 
 		<xsl:variable name="fPayType">
 			<xsl:choose>
-				<xsl:when test="string($InvoicePayment31AccountNumber) and $isSWIFT = True and string($InvoicePayment31ClearingID)"><xsl:value-of select="'31noneu'"/></xsl:when>
-				<xsl:when test="string($InvoicePayment31AccountNumber) and $isSWIFT = True and not(string($InvoicePayment31ClearingID))"><xsl:value-of select="'31eu'"/></xsl:when>
+				<xsl:when test="string($InvoicePayment31AccountNumber) and $isSWIFT and string($InvoicePayment31ClearingID)"><xsl:value-of select="'31noneu'"/></xsl:when>
+				<xsl:when test="string($InvoicePayment31AccountNumber) and $isSWIFT and not(string($InvoicePayment31ClearingID))"><xsl:value-of select="'31eu'"/></xsl:when>
 				<xsl:when test="string($InvoicePayment42AccountNumber) and string($InvoicePayment42RegNumber) and $isSWIFT = False"><xsl:value-of select="'42'"/></xsl:when>
 				<xsl:when test="string($InvoicePayment42ID) and ($SeCountry = 'FI' or $SeCountry = 'NO')"><xsl:value-of select="'42'"/></xsl:when>
 				<xsl:otherwise><xsl:value-of select="'1'"/></xsl:otherwise>

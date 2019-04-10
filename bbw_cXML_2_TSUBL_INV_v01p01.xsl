@@ -7,7 +7,7 @@
         publisher= "Tradeshift"
         creator= "IngKye Ng, Tradeshift"
         created= 2019-01-29
-        modified= 2019-03-27
+        modified= 2019-04-10
         issued= 2019-01-30
         
 ******************************************************************************************************************
@@ -655,7 +655,7 @@
                 <xsl:when test="string($IpPartyTAXscheme)">
                     <xsl:value-of select="$IpPartyTAXscheme"/>
                 </xsl:when>
-                <xsl:when test="$SeCountry = 'MY' and (string-length($IpPartyTAX) = 12 or string-length($IpPartyTAX) = 16)">
+                <xsl:when test="$IpCountry = 'MY' and (string-length($IpPartyTAX) = 12 or string-length($IpPartyTAX) = 16)">
                     <xsl:value-of select="'MY:GST'"/>
                 </xsl:when>
                 <xsl:otherwise>
