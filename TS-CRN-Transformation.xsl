@@ -39,6 +39,39 @@ Description: This XSLT is to transform invoice to credit note if credit note fla
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
+    
+    <xsl:template match="cac:Delivery">
+        <xsl:choose>
+            <xsl:when test="../cbc:InvoiceTypeCode/text()='380' or  ../cbc:InvoiceTypeCode/text()='325' or ../cbc:InvoiceTypeCode/text()='386'">
+                <xsl:element name="cac:Delivery">
+                    <xsl:apply-templates select="@* | node()" />
+                </xsl:element>
+            </xsl:when>
+            <xsl:otherwise/>
+        </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template match="cac:PaymentMeans">
+        <xsl:choose>
+            <xsl:when test="../cbc:InvoiceTypeCode/text()='380' or  ../cbc:InvoiceTypeCode/text()='325' or ../cbc:InvoiceTypeCode/text()='386'">
+                <xsl:element name="cac:PaymentMeans">
+                    <xsl:apply-templates select="@* | node()" />
+                </xsl:element>
+            </xsl:when>
+            <xsl:otherwise/>
+        </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template match="cac:PaymentTerms">
+        <xsl:choose>
+            <xsl:when test="../cbc:InvoiceTypeCode/text()='380' or  ../cbc:InvoiceTypeCode/text()='325' or ../cbc:InvoiceTypeCode/text()='386'">
+                <xsl:element name="cac:PaymentTerms">
+                    <xsl:apply-templates select="@* | node()" />
+                </xsl:element>
+            </xsl:when>
+            <xsl:otherwise/>
+        </xsl:choose>
+    </xsl:template>
 
     <xsl:template match="cac:InvoiceLine">
         <xsl:choose>

@@ -578,7 +578,7 @@
 					<cbc:ID>1</cbc:ID>
 					<cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">sourcedocument</cbc:DocumentTypeCode>
 					<cac:Attachment>
-						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="text/plain">
+						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="application/EDI-X12">
 							<xsl:value-of select="bbw:metadataBase64('inFile')" disable-output-escaping="no"/>
 						</cbc:EmbeddedDocumentBinaryObject>
 					</cac:Attachment>
