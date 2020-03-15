@@ -195,8 +195,6 @@
                       select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoicePartner[Contact/@role = 'issuerOfInvoice']/IdReference[@domain='SenderAssigned']/@identifier"/>
 
         <xsl:variable name="SePartyGLN" select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoicePartner[Contact/@role = 'issuerOfInvoice']/IdReference[@domain='GLN']/@identifier"/>
-        
-        <xsl:variable name="SePartyPAN" select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoicePartner[Contact/@role = 'issuerOfInvoice']/IdReference[@domain='PAN']/@identifier"/>
 
         <xsl:variable name="SePartyLEGAL"
                       select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoicePartner[Contact/@role = 'issuerOfInvoice']/IdReference[@domain='legalID']/@identifier"/>
@@ -265,8 +263,6 @@
                       select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoicePartner[Contact/@role = 'billTo']/IdReference[@domain='tsleID']/@identifier"/>
 
         <xsl:variable name="IpPartyGLN" select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoicePartner[Contact/@role = 'billTo']/IdReference[@domain='GLN']/@identifier"/>
-        
-        <xsl:variable name="IpPartyPAN" select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoicePartner[Contact/@role = 'billTo']/IdReference[@domain='PAN']/@identifier"/>
 
         <xsl:variable name="IpPartyLEGAL"
                       select="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader/InvoicePartner[Contact/@role = 'billTo']/IdReference[@domain='legalID']/@identifier"/>
@@ -835,7 +831,10 @@
                     <cbc:ID>1</cbc:ID>
                     <cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">attachment</cbc:DocumentTypeCode>
                     <cac:Attachment>
-                        <cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="bbw:metadata('mimeCode')">
+                        <cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="attachment">
+                            <xsl:attribute name="mimeCode">
+				<xsl:value-of select="bbw:metadata('mimeCode')"/>
+			    </xsl:attribute>
                             <xsl:value-of select="bbw:metadataBase64('attachment')" disable-output-escaping="no"/>
                         </cbc:EmbeddedDocumentBinaryObject>
                     </cac:Attachment>
@@ -860,13 +859,6 @@
                         <cac:PartyIdentification>
                             <cbc:ID schemeAgencyID="9" schemeID="GLN">
                                 <xsl:value-of select="$SePartyGLN"/>
-                            </cbc:ID>
-                        </cac:PartyIdentification>
-                    </xsl:if>
-                    <xsl:if test="string($SePartyPAN)">
-                        <cac:PartyIdentification>
-                            <cbc:ID schemeAgencyID="9" schemeID="IN:PAN">
-                                <xsl:value-of select="$SePartyPAN"/>
                             </cbc:ID>
                         </cac:PartyIdentification>
                     </xsl:if>
@@ -1090,13 +1082,6 @@
                         <cac:PartyIdentification>
                             <cbc:ID schemeAgencyID="9" schemeID="GLN">
                                 <xsl:value-of select="$IpPartyGLN"/>
-                            </cbc:ID>
-                        </cac:PartyIdentification>
-                    </xsl:if>
-                    <xsl:if test="string($IpPartyPAN)">
-                        <cac:PartyIdentification>
-                            <cbc:ID schemeAgencyID="9" schemeID="IN:PAN">
-                                <xsl:value-of select="$IpPartyPAN"/>
                             </cbc:ID>
                         </cac:PartyIdentification>
                     </xsl:if>
@@ -2047,9 +2032,7 @@
                     <xsl:variable name="ItemIdType" select="''"/>
 
                     <xsl:variable name="ItemId" select="InvoiceDetailItemReference/ItemID/SupplierPartID"/>
-                    
-                    <xsl:variable name="HSNId" select="InvoiceDetailItemReference/ManufacturerPartID"/>
-                    
+
                     <xsl:variable name="ItemName" select="InvoiceDetailItemReference/Description"/>
 
                     <xsl:variable name="Quantity" select="./@quantity"/>
@@ -2527,14 +2510,6 @@
                                 </xsl:otherwise>
                             </xsl:choose>
                         </cac:SellersItemIdentification>
-                        <xsl:if test="string($HSNId)">
-                            <cac:AdditionalItemIdentification>
-                                <cbc:ID schemeID='HSN'>
-                                    <xsl:value-of select="$HSNId"/>
-                                </cbc:ID>
-                            </cac:AdditionalItemIdentification>
-                        </xsl:if>
-                        
                     </cac:Item>
 
                     <cac:Price>
