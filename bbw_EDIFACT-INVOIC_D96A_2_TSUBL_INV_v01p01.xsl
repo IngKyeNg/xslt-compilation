@@ -49,7 +49,7 @@
 					string(/EDIFACT/MESSAGES/INVOIC/SG44/SG45/LOC[LOC0101 = '8']/LOC0204) or
 					string(/EDIFACT/MESSAGES/INVOIC/SG44/SG45/LOC[LOC0101 = '88']/LOC0204) or
 					string(/EDIFACT/MESSAGES/INVOIC/SG44/SG45/LOC[LOC0101 = '5']/LOC0204) or
-					string(/EDIFACT/MESSAGES/INVOIC/SG25/EQD[EQD0101 = 'CN'])">
+					string(/EDIFACT/MESSAGES/INVOIC/SG25[1]/EQD[EQD0101 = 'CN'])">
 				<xsl:value-of select="'true'"/>
 			</xsl:when>
 			<xsl:otherwise>
@@ -1354,9 +1354,9 @@
 					<xsl:value-of select="'MY:GST'"/>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of
+					<!--xsl:value-of
 						select="(bbw:lookupTableValue('PartyTAXscheme', 'CountryCode', 'PartyTAXscheme', $SeCountry, 'TS:VAT'))[1]"
-						disable-output-escaping="no"/>
+						disable-output-escaping="no"/-->
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -1367,9 +1367,9 @@
 					<xsl:value-of select="$SePartyLEGALscheme"/>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of
+					<!--xsl:value-of
 						select="(bbw:lookupTableValue('PartyLEGALscheme', 'CountryCode', 'PartyLEGALscheme', $SeCountry, 'VAT'))[1]"
-						disable-output-escaping="no"/>
+						disable-output-escaping="no"/-->
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -1384,9 +1384,9 @@
 					<xsl:value-of select="'MY:GST'"/>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of
+					<!--xsl:value-of
 						select="(bbw:lookupTableValue('PartyTAXscheme', 'CountryCode', 'PartyTAXscheme', $ApCountry, 'TS:VAT'))[1]"
-						disable-output-escaping="no"/>
+						disable-output-escaping="no"/-->
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -1397,9 +1397,9 @@
 					<xsl:value-of select="$ApPartyLEGALscheme"/>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of
+					<!--xsl:value-of
 						select="(bbw:lookupTableValue('PartyLEGALscheme', 'CountryCode', 'PartyLEGALscheme', $ApCountry, 'VAT'))[1]"
-						disable-output-escaping="no"/>
+						disable-output-escaping="no"/-->
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -1414,9 +1414,9 @@
 					<xsl:value-of select="'MY:GST'"/>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of
+					<!--xsl:value-of
 						select="(bbw:lookupTableValue('PartyTAXscheme', 'CountryCode', 'PartyTAXscheme', $IpCountry, 'TS:VAT'))[1]"
-						disable-output-escaping="no"/>
+						disable-output-escaping="no"/-->
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -1427,9 +1427,9 @@
 					<xsl:value-of select="$IpPartyLEGALscheme"/>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:value-of
+					<!--xsl:value-of
 						select="(bbw:lookupTableValue('PartyLEGALscheme', 'CountryCode', 'PartyLEGALscheme', $IpCountry, 'VAT'))[1]"
-						disable-output-escaping="no"/>
+						disable-output-escaping="no"/-->
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -1716,11 +1716,9 @@
 			</xsl:choose>
 		</xsl:variable>
 
-		<xsl:if test="$MSG">
-			<xsl:value-of
-				select="metadata-util:put($MSG, 'com_babelway_messaging_context_message_reference', string(concat('INV', $DocID, '_', $SeCountry)))"
-			/>
-		</xsl:if>
+		<!--xsl:if test="$MSG">
+			<xsl:value-of select="metadata-util:put($MSG, 'com_babelway_messaging_context_message_reference', string(concat('INV', $DocID, '_', $SeCountry)))"/>
+		</xsl:if-->
 
 		<!-- Start of Invoice -->
 		<Invoice>
@@ -1844,7 +1842,7 @@
 				</cac:AdditionalDocumentReference>
 			</xsl:if>
 
-			<xsl:if test="bbw:metadata('inFile') != ''">
+			<!--xsl:if test="bbw:metadata('inFile') != ''">
 				<cac:AdditionalDocumentReference>
 					<cbc:ID>1</cbc:ID>
 					<cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">sourcedocument</cbc:DocumentTypeCode>
@@ -1866,7 +1864,7 @@
 						</cbc:EmbeddedDocumentBinaryObject>
 					</cac:Attachment>
 				</cac:AdditionalDocumentReference>
-			</xsl:if>
+			</xsl:if-->
 
 			<xsl:choose>
 				<xsl:when test="$AGflag = 'true'">

@@ -3,12 +3,12 @@
 <!--
 ******************************************************************************************************************
 		TSUBL Stylesheet	
-		title= TSCSV_2_TSUBL_INV_v01p01	
+		title= bbw_TSCSV_2_TSUBL_INV_v01p01
 		publisher= "Tradeshift"
-		creator= "Chew Jia Wei, Tradeshift"
-		created= 2019-02-26
-		modified= 2019-03-13, ingkye.ng
-		issued= 2018-02-27
+		creator= "IngKye Ng, Tradeshift"
+		created= 2019-07-01
+		modified= 2019-07-01
+		issued= 2019-07-01
 		
 ******************************************************************************************************************
 -->
@@ -27,15 +27,21 @@
 	xmlns:metadata-util="java:com.babelway.messaging.transformation.xslt.function.MetadataUtil"
 	xmlns:bbw="java:com.babelway.messaging.transformation.xslt.function.BabelwayFunctions"
 	xmlns:bbwx="http://xmlns.babelway.com/com.babelway.messaging.transformation.xslt.function.BBWXContextFactory"
-	exclude-result-prefixes="xs metadata-util bbw bbwx">
+	xmlns:ts1="http://ts1" 
+	exclude-result-prefixes="xs metadata-util bbw bbwx ts1">
 
 	<xsl:output method="xml" encoding="UTF-8" indent="yes"/>
 	<xsl:strip-space elements="*" />
 	<xsl:param name="MSG"/>
+	
+	<xsl:function name="ts1:format-date" as="xs:string">
+		<xsl:param name="inDate" />
+		<xsl:value-of select="bbw:changeDateTimeFormat($inDate, 'dd.MM.yyyy', 'yyyy-MM-dd')"/>
+	</xsl:function>
 
-     	<xsl:template match="/">
+     <xsl:template match="/">
 		<xsl:apply-templates/>
-     	</xsl:template>
+     </xsl:template>
 
 	<xsl:template match="*">
 		<Fejl>
@@ -65,11 +71,11 @@
 
 		<xsl:variable name="DocID" select="line[1]/InvoiceNumber"/>
 
-	    <xsl:variable name="DocDate" select="line[1]/InvoiceDate"/>
+		<xsl:variable name="DocDate" select="ts1:format-date(line[1]/InvoiceDate)"/>
 
 		<xsl:variable name="TaxDate">
 			<xsl:choose>
-			    <xsl:when test="string(line[1]/InvoiceTaxPointDate)"><xsl:value-of select="line[1]/InvoiceTaxPointDate"/></xsl:when>
+				<xsl:when test="string(line[1]/InvoiceTaxPointDate)"><xsl:value-of select="ts1:format-date(line[1]/InvoiceTaxPointDate)"/></xsl:when>
 				<xsl:otherwise><xsl:value-of select="$DocDate"/></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -95,11 +101,11 @@
 
 	    <xsl:variable name="SelRefID" select="line[1]/InvoiceSellersOrderID"/>
 
-	    <xsl:variable name="RefDate" select="line[1]/InvoiceOrderDate"/>
+		<xsl:variable name="RefDate" select="ts1:format-date(line[1]/InvoiceOrderDate)"/>
 		
 		<xsl:variable name="InvRefID" select="line[1]/CreditNoteInvoiceID"/>
 		
-		<xsl:variable name="InvRefDate" select="line[1]/CreditNoteInvoiceDate"/>
+		<xsl:variable name="InvRefDate" select="ts1:format-date(line[1]/CreditNoteInvoiceDate)"/>
 
 	    <xsl:variable name="InvoiceContractReferenceID" select="line[1]/InvoiceContractReferenceID"/>
 
@@ -197,7 +203,7 @@
 		<xsl:variable name="IpRefMail" select="line[1]/InvoiceReceiverContactMail"/>
 
 
-		<xsl:variable name="DelDate" select="line[1]/InvoiceDeliveryDate"/>
+		<xsl:variable name="DelDate" select="ts1:format-date(line[1]/InvoiceDeliveryDate)"/>
 
 		<xsl:variable name="DelIDtype" select="'GLN'"/>
 
@@ -224,7 +230,7 @@
 
 		<xsl:variable name="PayType" select="line[1]/InvoicePaymentMeansCode"/>
 
-		<xsl:variable name="PayDate" select="line[1]/InvoicePaymentDueDate"/>
+		<xsl:variable name="PayDate" select="ts1:format-date(line[1]/InvoicePaymentDueDate)"/>
 
 		<xsl:variable name="InvoicePayment31AccountNumber" select="line[1]/InvoicePayment31AccountNumber"/>
 
@@ -290,7 +296,7 @@
 
 		<xsl:variable name="TaxExchangeRateDate">
 			<xsl:choose>
-				<xsl:when test="string(line[1]/InvoiceTaxExchangeRateDate)"><xsl:value-of select="line[1]/InvoiceTaxExchangeRateDate"/></xsl:when>
+				<xsl:when test="string(line[1]/InvoiceTaxExchangeRateDate)"><xsl:value-of select="ts1:format-date(line[1]/InvoiceTaxExchangeRateDate)"/></xsl:when>
 				<xsl:otherwise><xsl:value-of select="$DocDate"/></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
@@ -780,7 +786,7 @@
 					<cbc:ID>1</cbc:ID>
 					<cbc:DocumentTypeCode listID="urn:tradeshift.com:api:1.0:documenttypecode">attachment</cbc:DocumentTypeCode>
 					<cac:Attachment>
-						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="attachment" mimeCode="bbw:metadata('mimeCode')">
+						<cbc:EmbeddedDocumentBinaryObject encodingCode="Base64" filename="sourcedocument" mimeCode="bbw:metadata('mimeCode')">
 							<xsl:value-of select="bbw:metadataBase64('attachment')" disable-output-escaping="no"/>
 						</cbc:EmbeddedDocumentBinaryObject>
 					</cac:Attachment>

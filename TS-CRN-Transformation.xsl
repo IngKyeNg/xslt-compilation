@@ -30,46 +30,16 @@ Description: This XSLT is to transform invoice to credit note if credit note fla
                     <xsl:apply-templates select="@* | node()" />
                 </xsl:element>
             </xsl:when>
-            <xsl:otherwise>
+            <xsl:when test="cbc:InvoiceTypeCode/text()='381'">
                 <xsl:element name="CreditNote" namespace="urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2">
                     <xsl:namespace name="cac">urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2</xsl:namespace>
                     <xsl:namespace name="cbc">urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2</xsl:namespace>
                     <xsl:apply-templates select="@* | node()" />
                 </xsl:element>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="bbw:fail('Document Type Code Not Defined')"/>
             </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
-    
-    <xsl:template match="cac:Delivery">
-        <xsl:choose>
-            <xsl:when test="../cbc:InvoiceTypeCode/text()='380' or  ../cbc:InvoiceTypeCode/text()='325' or ../cbc:InvoiceTypeCode/text()='386'">
-                <xsl:element name="cac:Delivery">
-                    <xsl:apply-templates select="@* | node()" />
-                </xsl:element>
-            </xsl:when>
-            <xsl:otherwise/>
-        </xsl:choose>
-    </xsl:template>
-    
-    <xsl:template match="cac:PaymentMeans">
-        <xsl:choose>
-            <xsl:when test="../cbc:InvoiceTypeCode/text()='380' or  ../cbc:InvoiceTypeCode/text()='325' or ../cbc:InvoiceTypeCode/text()='386'">
-                <xsl:element name="cac:PaymentMeans">
-                    <xsl:apply-templates select="@* | node()" />
-                </xsl:element>
-            </xsl:when>
-            <xsl:otherwise/>
-        </xsl:choose>
-    </xsl:template>
-    
-    <xsl:template match="cac:PaymentTerms">
-        <xsl:choose>
-            <xsl:when test="../cbc:InvoiceTypeCode/text()='380' or  ../cbc:InvoiceTypeCode/text()='325' or ../cbc:InvoiceTypeCode/text()='386'">
-                <xsl:element name="cac:PaymentTerms">
-                    <xsl:apply-templates select="@* | node()" />
-                </xsl:element>
-            </xsl:when>
-            <xsl:otherwise/>
         </xsl:choose>
     </xsl:template>
 
@@ -87,6 +57,14 @@ Description: This XSLT is to transform invoice to credit note if credit note fla
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
+    
+    <xsl:template match="/*[name()='Invoice' and not(cbc:InvoiceTypeCode/text()='380')]/cac:PaymentMeans"/>
+    
+    <xsl:template match="/*[name()='Invoice' and not(cbc:InvoiceTypeCode/text()='380')]/cac:PaymentTerms"/>
+    
+    <xsl:template match="/*[name()='Invoice' and not(cbc:InvoiceTypeCode/text()='380')]/cac:Delivery"/>
+    
+    <xsl:template match="/*[name()='Invoice' and not(cbc:InvoiceTypeCode/text()='380')]/cac:InvoiceLine/cac:AllowanceCharge"/>
 
     <xsl:template match="cac:InvoiceLine/cbc:InvoicedQuantity">
         <xsl:choose>
@@ -101,5 +79,25 @@ Description: This XSLT is to transform invoice to credit note if credit note fla
                 </xsl:element>
             </xsl:otherwise>
         </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template match="/*[not(cbc:InvoiceTypeCode/text()='380')]/cac:InvoiceLine/cac:OrderLineReference">
+        <xsl:variable name="POLineID" select="cbc:LineID"/>
+        <xsl:variable name="POID" select="cac:OrderReference/cbc:ID"/>
+        
+        <cac:DocumentReference>
+            <cbc:ID>
+                <xsl:value-of select="$POID"/>
+            </cbc:ID>
+            <cbc:DocumentTypeCode><xsl:attribute name="listID">urn:tradeshift.com:api:1.0:documenttypecode</xsl:attribute>Order ID</cbc:DocumentTypeCode>
+        </cac:DocumentReference>
+        
+        <cac:DocumentReference>
+            <cbc:ID>
+                <xsl:value-of select="$POLineID"/>
+            </cbc:ID>
+            <cbc:DocumentTypeCode><xsl:attribute name="listID">urn:tradeshift.com:api:1.0:documenttypecode</xsl:attribute>Order Line ID</cbc:DocumentTypeCode>
+        </cac:DocumentReference>
+        
     </xsl:template>
 </xsl:stylesheet>
