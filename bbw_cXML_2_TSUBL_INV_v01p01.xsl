@@ -7,8 +7,8 @@
         publisher= "Tradeshift"
         creator= "IngKye Ng, Tradeshift"
         created= 2019-01-29
-        modified= 2019-04-10
-        issued= 2019-01-30
+        modified= 2020-03-19
+        issued= 2020-03-19
         
 ******************************************************************************************************************
 -->
@@ -386,21 +386,21 @@
 
 
         <xsl:variable name="TaxRate"
-                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail/@percentageRate"/>
+                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail[1]/@percentageRate"/>
 
         <xsl:variable name="TaxRateCode"
-                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail/Description"/>
+                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail[1]/Description"/>
 
         <xsl:variable name="TaxSchemeID"
-                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail/@category"/>
+                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail[1]/@category"/>
 
         <xsl:variable name="TaxSchemeName"
-                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail/@category"/>
+                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail[1]/@category"/>
 
         <xsl:variable name="TaxAmount" select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/Money"/>
 
         <xsl:variable name="TaxableAmount"
-                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail/TaxableAmount/Money"/>
+                      select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail[1]/TaxableAmount/Money"/>
 
         <xsl:variable name="LineTotal" select="Request/InvoiceDetailRequest/InvoiceDetailSummary/SubtotalAmount/Money"/>
 
@@ -1727,14 +1727,15 @@
                     </xsl:if>
                 </cac:TaxExchangeRate>
             </xsl:if>
+            
+            <!-- Header Tax -->
 
             <cac:TaxTotal>
                 <cbc:TaxAmount currencyID="{$CurrencyCode}">
                     <xsl:value-of select="$fTaxAmount"/>
                 </cbc:TaxAmount>
                 <xsl:choose>
-                    <xsl:when
-                            test="count(Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail) &gt; 1 and $fTaxAmount &gt; 0">
+                    <xsl:when test="count(Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail) &gt; 1 and $fTaxAmount &gt; 0">
                         <xsl:for-each select="Request/InvoiceDetailRequest/InvoiceDetailSummary/Tax/TaxDetail">
                             <xsl:variable name="ft2" select="./TaxableAmount/Money"/>
                             <xsl:variable name="ft5" select="./TaxAmount/Money"/>
